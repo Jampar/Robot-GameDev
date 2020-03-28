@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerStats : MonoBehaviour
 {
@@ -8,11 +9,14 @@ public class PlayerStats : MonoBehaviour
     float maxPlayerHealth = 100.0f;
     float currentPlayerHealth;
 
-    float maxPlayerShield = 50.0f;
+    float maxPlayerShield = 40.0f;
     float currentPlayerShield;
 
     public Animator healthAnim;
+    public Text healthText;
 
+    public Animator shieldAnim;
+    public Text shieldText;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,23 +35,41 @@ public class PlayerStats : MonoBehaviour
     void UpdateStatUI(){
         int healthRounded = (int)currentPlayerHealth.ToNearestMultiple(20);
         healthAnim.SetTrigger(healthRounded.ToString() + " Percent");
+        healthText.text = Mathf.RoundToInt(currentPlayerHealth).ToString();
+
+        int shieldRounded = (int)currentPlayerShield.ToNearestMultiple(10,FloatExtensions.ROUNDING.UP)/10;
+        print(shieldRounded);
+        shieldAnim.SetInteger("ShieldState", shieldRounded);
+        shieldText.text = Mathf.RoundToInt(currentPlayerShield).ToString();
     }
 
-    public void ChangeHealthValue(float value){
+    public bool ChangeHealthValue(float value){
+      if((currentPlayerHealth + value) <= maxPlayerHealth){
         currentPlayerHealth += value;
         UpdateStatUI();
+        return true;
+      }
+      return false;
     }
-    public void ChangeShieldValue(float value){
+    public bool ChangeShieldValue(float value){
+      if((currentPlayerShield + value) <= maxPlayerShield){
         currentPlayerShield += value;
         UpdateStatUI();
+        return true;
+      }
+      return false;
     }
     public void SetHealthValue(float value){
+      if(value <= maxPlayerHealth){
         currentPlayerHealth = value;
         UpdateStatUI();
+      }
     }
     public void SetShieldValue(float value){
+      if(value <= maxPlayerShield){
         currentPlayerShield = value;
         UpdateStatUI();
+      }
     }
     public void ChangeHealthCap(float additionHealth){
         maxPlayerHealth += additionHealth;

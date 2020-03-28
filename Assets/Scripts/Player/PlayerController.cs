@@ -78,15 +78,17 @@ public class PlayerController : MonoBehaviour {
 		CharacterController controller = GetComponent<CharacterController> ();
 
 		if (controller.isGrounded) {
+
 			moveDirection = new Vector3 (Input.GetAxis ("Horizontal"), 0, Input.GetAxis ("Vertical"));
 			moveDirection = transform.TransformDirection (moveDirection);
-		}
 
-		if (Input.GetKeyDown (KeyCode.Space)&& isGrounded == true) {
-			moveDirection.y = jumpForce * 0.5f;
-		}
+			if (Input.GetButton("Jump")) {
+					 moveDirection.y = jumpForce;
+			 }
 
+		}
 		moveDirection.y -= gravity  * Time.deltaTime;
+
 		controller.Move (moveDirection * Time.deltaTime * speed);
 	}
 }

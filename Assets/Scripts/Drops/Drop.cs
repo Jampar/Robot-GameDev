@@ -19,28 +19,40 @@ public class Drop : MonoBehaviour
   GameObject player;
   bool playerInRange;
 
-  float attractionForce = 2.0f;
+  float collectRadius = 1.0f;
+
+  Rigidbody rb;
 
   void Awake(){
     player = GameObject.FindGameObjectWithTag("Player");
+    rb = GetComponent<Rigidbody>();
   }
 
   // Update is called once per frame
   void Update()
   {
-
-    if(Vector3.Distance(transform.position, player.transform.position) < 1f){
-
-      if(type == DropType.Health){
-        player.GetComponent<PlayerStats>().ChangeHealthValue(dropAmount);
+    Collider[] colls = Physics.OverlapSphere(transform.position,collectRadius);
+    foreach(Collider coll in colls){
+      if(coll.gameObject == player){
+        if(type == DropType.Health){
+          if(player.GetComponent<PlayerStats>().ChangeHealthValue(dropAmount)){
+            Destroy(gameObject);
+          }
+        }
+        if(type == DropType.Shield){
+          if(player.GetComponent<PlayerStats>().ChangeShieldValue(dropAmount)){
+            Destroy(gameObject);
+          }
+        }
       }
-      if(type == DropType.Shield){
-        player.GetComponent<PlayerStats>().ChangeShieldValue(dropAmount);
-      }
-      Destroy(gameObject);
-
     }
+  }
+  void OnDrawGizmos(){
+    Color color = Color.yellow;
+    color.a = 0.05f;
 
+    Gizmos.color = color;
+    Gizmos.DrawSphere(transform.position,collectRadius);
   }
 
 }
