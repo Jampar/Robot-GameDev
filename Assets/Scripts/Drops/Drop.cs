@@ -23,30 +23,53 @@ public class Drop : MonoBehaviour
 
   Rigidbody rb;
 
+  Quaternion startRotation;
+  Quaternion targetRotation;
+  float rotationSpeed = 1.0f;
+
   void Awake(){
     player = GameObject.FindGameObjectWithTag("Player");
     rb = GetComponent<Rigidbody>();
+
+    startRotation = transform.rotation;
+    targetRotation = Random.rotation;
   }
 
   // Update is called once per frame
   void Update()
   {
+    DropRotation();
+
+    if(CheckForPlayerPickup()){
+        ApplyDropType();
+    }
+  }
+
+  bool CheckForPlayerPickup(){
     Collider[] colls = Physics.OverlapSphere(transform.position,collectRadius);
     foreach(Collider coll in colls){
       if(coll.gameObject == player){
-        if(type == DropType.Health){
-          if(player.GetComponent<PlayerStats>().ChangeHealthValue(dropAmount)){
-            Destroy(gameObject);
-          }
-        }
-        if(type == DropType.Shield){
-          if(player.GetComponent<PlayerStats>().ChangeShieldValue(dropAmount)){
-            Destroy(gameObject);
-          }
-        }
+        return true;
+      }
+    }
+    return false;
+  }
+  void ApplyDropType(){
+    if(type == DropType.Health){
+      if(player.GetComponent<PlayerStats>().ChangeHealthValue(dropAmount)){
+        Destroy(gameObject);
+      }
+    }
+    if(type == DropType.Shield){
+      if(player.GetComponent<PlayerStats>().ChangeShieldValue(dropAmount)){
+        Destroy(gameObject);
       }
     }
   }
+  void DropRotation(){
+    transform.rotation = Quaternion.Slerp(startRotation, targetRotation, rotationSpeed * Time.deltaTime);
+  }
+
   void OnDrawGizmos(){
     Color color = Color.yellow;
     color.a = 0.05f;
