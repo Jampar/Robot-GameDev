@@ -12,14 +12,20 @@ public class PlayerStats : MonoBehaviour
     float maxPlayerShield = 40.0f;
     float currentPlayerShield;
 
-    public Animator healthAnim;
-    public Text healthText;
+    Animator healthAnim;
+    Text healthText;
 
-    public Animator shieldAnim;
-    public Text shieldText;
+    Animator shieldAnim;
+    Text shieldText;
     // Start is called before the first frame update
     void Start()
     {
+        healthAnim = GameObject.Find("PlayerUI").transform.Find("Health").GetComponent<Animator>();
+        shieldAnim = GameObject.Find("PlayerUI").transform.Find("Shield").GetComponent<Animator>();
+        
+        healthText = healthAnim.transform.Find("HealthText").GetComponent<Text>();
+        shieldText = shieldAnim.transform.Find("ShieldText").GetComponent<Text>();
+
         //Setting Correct Start Values
         SetHealthValue(20.0f);
         SetShieldValue(0.0f);
