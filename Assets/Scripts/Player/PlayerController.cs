@@ -3,24 +3,18 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
-	float speed = 5.0f;
-	float legLerpSpeed = 5.0f;
+	public float speed = 3f;
+	float lerpSpeed = 5.0f;
 	public bool LockCursor;
 
-	public float mouseSensitivityX = 1;
-	public float mouseSensitivityY = 1;
-
-	float verticalLookRotation;
-
-	public Transform cameraTransform;
-	public Transform chestTransform;
-	public Transform hipTransform;
+	public Transform lookBone;
 
 	CharacterController characterController;
-
+	Animator animator;
 	// Use this for initialization
 	void Start ()
 	{
+		animator = GetComponent<Animator>();
 		characterController = GetComponent<CharacterController>();
 
 		if (LockCursor == true) {
@@ -32,27 +26,55 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
 	{
-		Look ();
 		Movement ();
 	}
+	void LateUpdate(){
+	    Look();
+	}
 
-	
-	public void Look ()
+	void Look(){
+		GameObject camera = Camera.main.gameObject;
+		Vector3 lookPoint = camera.transform.position + camera.transform.forward * 100;
+		lookBone.LookAt(lookPoint);
+	}
+
+	void Movement ()
 	{
-
-		//chestTransform.Rotate (Vector3.forward * Input.GetAxis ("Mouse X") * mouseSensitivityX);
-
-		verticalLookRotation += Input.GetAxis ("Mouse Y") * mouseSensitivityY;
-		verticalLookRotation = Mathf.Clamp (verticalLookRotation, -60, 60);
+		float forward = Input.GetAxis("Vertical");
+		float right = Input.GetAxis("Horizontal");
 		
-		cameraTransform.localEulerAngles = Vector3.left * verticalLookRotation;
+		Vector3 moveVector = new Vector3(right,0,forward);
+
+		MovementProcess(moveVector);
+
+		moveVector.y -= 9.81f * Time.deltaTime;
+
+		moveVector = transform.TransformDirection(moveVector);
+		characterController.Move(moveVector * speed * Time.deltaTime);
 
 	}
-	public void Movement ()
-	{
 
+	void MovementProcess(Vector3 movementVector){
 
+		if(movementVector.z > 0){
+			MatchCameraRotation();
+			animator.SetBool("F_Walking",true);		
+		}
+		else if(movementVector.z < 0){
+			MatchCameraRotation();
+			animator.SetBool("B_Walking",true);	
+		}
+		else{
+			animator.SetBool("F_Walking",false);
+			animator.SetBool("B_Walking",false);
+		}
+		
 	}
 
-
+	void MatchCameraRotation(){
+		transform.rotation =new Quaternion(transform.rotation.x,
+														Mathf.Lerp(transform.rotation.y,Camera.main.transform.rotation.y,lerpSpeed*Time.deltaTime),
+														transform.rotation.z,
+														Mathf.Lerp(transform.rotation.w,Camera.main.transform.rotation.w,lerpSpeed*Time.deltaTime));
+	}
 }
