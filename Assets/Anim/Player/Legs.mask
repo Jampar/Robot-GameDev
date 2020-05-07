@@ -1,0 +1,153 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!319 &31900000
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Legs
+  m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+  m_Elements:
+  - m_Path: 
+    m_Weight: 1
+  - m_Path: Empty
+    m_Weight: 0
+  - m_Path: Mesh
+    m_Weight: 0
+  - m_Path: Skeleton
+    m_Weight: 0
+  - m_Path: Skeleton/Chest
+    m_Weight: 1
+  - m_Path: Skeleton/Chest/L_Shoulder
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_IndexBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_IndexBase/L_IndexMiddle
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_IndexBase/L_IndexMiddle/L_IndexTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_IndexBase/L_IndexMiddle/L_IndexTip/L_IndexTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_MiddleBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_MiddleBase/L_MiddleMiddle
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_MiddleBase/L_MiddleMiddle/L_MiddleTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_MiddleBase/L_MiddleMiddle/L_MiddleTip/L_MiddleTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_RingBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_RingBase/L_RingMiddle
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_RingBase/L_RingMiddle/L_RingTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_RingBase/L_RingMiddle/L_RingTip/L_RingTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_ThumbBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_ThumbBase/L_ThumbTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm/L_Hand/L_ThumbBase/L_ThumbTip/L_ThumbTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/Neck
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/Neck/Head
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/Neck/Head/Head_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_IndexBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_IndexBase/R_IndexMiddle
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_IndexBase/R_IndexMiddle/R_IndexTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_IndexBase/R_IndexMiddle/R_IndexTip/R_IndexTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_MiddleBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_MiddleBase/R_MiddleMiddle
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_MiddleBase/R_MiddleMiddle/R_MiddleTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_MiddleBase/R_MiddleMiddle/R_MiddleTip/R_MiddleTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_RingBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_RingBase/R_RingMiddle
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_RingBase/R_RingMiddle/R_RingTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_RingBase/R_RingMiddle/R_RingTip/R_RingTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_ThumbBase
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_ThumbBase/R_ThumbTip
+    m_Weight: 0
+  - m_Path: Skeleton/Chest/R_Shoulder/R_Forearm/R_Hand/R_ThumbBase/R_ThumbTip/R_ThumbTip_end
+    m_Weight: 0
+  - m_Path: Skeleton/Hips
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/L_Thigh
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/L_Thigh/L_Tnee
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/L_Thigh/L_Tnee/L_Lnee
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/L_Thigh/L_Tnee/L_Lnee/L_Foot
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/L_Thigh/L_Tnee/L_Lnee/L_Foot/L_Foot_end
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/R_Thigh
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/R_Thigh/R_Tnee
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/R_Thigh/R_Tnee/R_Lnee
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/R_Thigh/R_Tnee/R_Lnee/R_Foot
+    m_Weight: 1
+  - m_Path: Skeleton/Hips/R_Thigh/R_Tnee/R_Lnee/R_Foot/R_Foot_end
+    m_Weight: 1
+  - m_Path: Skeleton/L_ArmPole
+    m_Weight: 0
+  - m_Path: Skeleton/L_ArmPole/L_ArmPole_end
+    m_Weight: 0
+  - m_Path: Skeleton/L_ArmTarget
+    m_Weight: 0
+  - m_Path: Skeleton/L_ArmTarget/L_ArmTarget_end
+    m_Weight: 0
+  - m_Path: Skeleton/L_FootTarget
+    m_Weight: 0
+  - m_Path: Skeleton/L_FootTarget/L_FootTarget_end
+    m_Weight: 0
+  - m_Path: Skeleton/LookTarget
+    m_Weight: 0
+  - m_Path: Skeleton/LookTarget/LookTarget_end
+    m_Weight: 0
+  - m_Path: Skeleton/R_ArmPole
+    m_Weight: 0
+  - m_Path: Skeleton/R_ArmPole/R_ArmPole_end
+    m_Weight: 0
+  - m_Path: Skeleton/R_ArmTarget
+    m_Weight: 0
+  - m_Path: Skeleton/R_ArmTarget/R_ArmTarget_end
+    m_Weight: 0
+  - m_Path: Skeleton/R_FootTarget
+    m_Weight: 0
+  - m_Path: Skeleton/R_FootTarget/R_FootTarget_end
+    m_Weight: 0
+  - m_Path: Skeleton/Torso
+    m_Weight: 1
+  - m_Path: Skeleton/Torso/Torso_end
+    m_Weight: 0
