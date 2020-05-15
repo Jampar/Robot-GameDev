@@ -19,8 +19,8 @@ public class PlayerInteraction : MonoBehaviour
         GameObject viewed = CurrentViewedObject();
         
         if(viewed != lastViewed){
-            viewed.AddComponent<Outline>();
-            Destroy(lastViewed.GetComponent<Outline>());
+            //viewed.AddComponent<Outline>();
+            //Destroy(lastViewed.GetComponent<Outline>());
         }
 
         if(Input.GetButtonDown("Interact") && viewed != null && viewed.tag == "Interactable")
