@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     float lerpSpeed = 7.0f;     //Speed for Dynamic Animation Interpolation
     float sprintSpeed = 6;
     float walkSpeed = 3f;
+    float crouchSpeed = 2.0f;
     float jumpSpeed = 5.0f;
 
     Vector3 surfaceNormal;
@@ -34,7 +35,11 @@ public class PlayerController : MonoBehaviour
     enum MovementTypeLookup { Idle, Walk, Sprint,Falling};
     MovementTypeLookup movementType;
 
+    bool isCrouched = false;
+
     float movementMagnitude;
+
+    float groundStepLimit = 0.1f;
 
     RaycastHit hit;
 	#endregion
@@ -45,7 +50,7 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Player Ground Tracking
-    float groundingDistance = 0.5f;
+    float groundingDistance = 0.2f;
     Vector3 groundingDirection = Vector3.down;
     #endregion 
 
@@ -88,7 +93,7 @@ public class PlayerController : MonoBehaviour
 		//Get Main Camera GameObject
         GameObject camera = Camera.main.gameObject;
 
-        if(GetComponent<PlayerCombat>().aiming){
+        if(GetComponent<PlayerCombat>().aiming && movementType != MovementTypeLookup.Sprint){
             chestBone.LookAt(camera.transform.position + camera.transform.forward * 10);
         }	
         else if(matchChest){
@@ -114,13 +119,18 @@ public class PlayerController : MonoBehaviour
                 hipBone.eulerAngles = new Vector3(hipBone.eulerAngles.x,
                                                     movementVectorRotation.eulerAngles.y + 180,		//180 degrees added to adjust for blender coordinate system
                                                     hipBone.eulerAngles.z);
-            }else{}
+            }
+            else
+            {
+
+            }
         }
 
     }
 
     void CharacterLocomotion()
     {
+        if(Input.GetButtonDown("Crouch")) isCrouched = !isCrouched;
 
         //If grounded
         if (isGrounded())
@@ -143,6 +153,20 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    float CameraLookAngle(){
+        RaycastHit hit;
+        Vector3 target = transform.forward;
+
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+
+        if(Physics.Raycast(ray, out hit))
+        {
+            target = new Vector3(hit.point.x,transform.position.y,hit.point.z) - transform.position;
+        }
+        
+        return Vector3.SignedAngle(target,transform.forward,Vector3.up);
+    }
+
     Vector3 CalculateMovementVector(){
 
         //Receive axis input
@@ -153,7 +177,9 @@ public class PlayerController : MonoBehaviour
 
         //Convert movement vector to world space
         movementVector = transform.TransformDirection(movementVector);
-        
+
+        movementVector = Quaternion.AngleAxis(CameraLookAngle(), Vector3.up) * movementVector;
+
         //Collect the square magnitude for movement vector
         movementMagnitude = movementVector.sqrMagnitude;
 
@@ -163,7 +189,7 @@ public class PlayerController : MonoBehaviour
             //Set movement vector y value
             movementVector.y = jumpSpeed;
         }
-        else
+        else if(isGrounded())
         {
             //Match the movement direction to ground angle
             movementVector = MatchVectorToGroundAngle(movementVector);
@@ -172,12 +198,11 @@ public class PlayerController : MonoBehaviour
         return movementVector;
     }
 
-
     void ApplyMovementTypeAnimation(){
          
         //Set movement animation
         animator.SetInteger("MovementType", (int)movementType);
-
+        animator.SetBool("Crouched",isCrouched);
     }
 
 
@@ -221,6 +246,10 @@ public class PlayerController : MonoBehaviour
     
     float MatchSpeedForMovementType(){
 
+        if(isCrouched)
+        {
+            return crouchSpeed;
+        }
         if(movementType == MovementTypeLookup.Sprint)  
         {
             return sprintSpeed; 
@@ -236,14 +265,18 @@ public class PlayerController : MonoBehaviour
     {
 
 		//Interpolate current Y rotation to the camera's Y rotation
-        transform.eulerAngles = AngleLerp(transform.eulerAngles, new Vector3(transform.eulerAngles.x, Camera.main.transform.eulerAngles.y, transform.eulerAngles.z), lerpSpeed * Time.deltaTime);
-    
+        transform.eulerAngles = AngleLerp(transform.eulerAngles, new Vector3(transform.eulerAngles.x,
+                                                                             Camera.main.transform.eulerAngles.y,
+                                                                             transform.eulerAngles.z),
+                                                                             lerpSpeed * Time.deltaTime);
     }
 
 
     bool isGrounded(){
 
-        if(Physics.Raycast(transform.position, groundingDirection, groundingDistance))
+        RaycastHit hit;
+
+        if(Physics.Raycast(transform.position, groundingDirection, out hit, groundingDistance))
         {      
             return true;
         }
@@ -267,7 +300,13 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    public bool isSprinting()
+    {
+        if(movementType == MovementTypeLookup.Sprint) return true;
+        else return false;
+    }
     
+
     Vector3 MatchVectorToGroundAngle(Vector3 movementVector){
 
         //Calculate the surface normal of the below face
@@ -280,9 +319,14 @@ public class PlayerController : MonoBehaviour
         Vector3 tangent = FindTangent(surfaceNormal);
 
         //If player is moving
-        if(movementMagnitude != 0){
+        if(movementMagnitude != 0 && tangent.y < groundStepLimit)
+        {
             //Move the player along the tangent
             movementVector.y = tangent.y * MatchSpeedForMovementType();
+        }
+        else
+        {
+            movementVector.y = 0;
         }
 
         return movementVector;
@@ -320,7 +364,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    
+
 	//Interpolate an angle properly
     Vector3 AngleLerp(Vector3 StartAngle, Vector3 FinishAngle, float t)
     {
