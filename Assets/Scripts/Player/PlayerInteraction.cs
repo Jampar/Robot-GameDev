@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using cakeslice;
 
 public class PlayerInteraction : MonoBehaviour
 {
 
-    float interactionRange = 3.0f;
+    float interactionRange = 4.0f;
     GameObject lastViewed;
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -17,19 +19,30 @@ public class PlayerInteraction : MonoBehaviour
     void Update()
     {
         GameObject viewed = CurrentViewedObject();
-        
-        if(viewed != lastViewed){
-            //viewed.AddComponent<Outline>();
-            //Destroy(lastViewed.GetComponent<Outline>());
-        }
 
-        if(Input.GetButtonDown("Interact") && viewed != null && viewed.tag == "Interactable")
-        {
-            if(viewed.GetComponent<Weapon>()){
-                GetComponent<PlayerCombat>().AddToAvaliableWeapons(viewed);
-                Destroy(viewed.gameObject);
+        if(viewed != null)
+        {   
+            if(Vector3.Distance(transform.position,viewed.transform.position) < interactionRange){         
+                if(viewed.tag == "Interactable")
+                {
+                    if(!viewed.GetComponent<Outline>())
+                        viewed.AddComponent<Outline>();
+
+                    if(Input.GetButtonDown("Interact")){
+                        if(viewed.GetComponent<Weapon>()){
+                            GetComponent<PlayerCombat>().AddToAvaliableWeapons(viewed);
+                            Destroy(viewed.gameObject);
+                        }
+                    }
+                }
             }
         }
+
+        if(lastViewed != null && viewed != lastViewed)
+        {
+            if(lastViewed.GetComponent<Outline>()) Destroy(lastViewed.GetComponent<Outline>());
+        } 
+
         lastViewed = viewed;
     }
 
@@ -41,11 +54,10 @@ public class PlayerInteraction : MonoBehaviour
 
         if(Physics.Raycast(ray,out hit))
         {
-            if((hit.point - transform.position).magnitude < interactionRange)
-                return hit.transform.gameObject;
+            return hit.transform.gameObject;
         }
         
-        return null;
+        return gameObject;
         
     }
 }
