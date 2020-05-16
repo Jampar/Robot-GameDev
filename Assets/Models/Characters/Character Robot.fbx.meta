@@ -217,14 +217,14 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.1086351
+      - time: 0.040694572
         functionName: Play
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 0bf6cc8faad62b1469e541360175a92b, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.55153203
+      - time: 0.5005766
         functionName: Play
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 0bf6cc8faad62b1469e541360175a92b, type: 3}

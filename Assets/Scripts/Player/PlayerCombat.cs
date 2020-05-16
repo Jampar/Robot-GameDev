@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+
+[System.Serializable]
+public class Ammo
+{
+    public GameObject projectile;
+    public int count;
+}
+
 public class PlayerCombat : DamageableObject
 {
     public bool aiming;
@@ -13,13 +21,14 @@ public class PlayerCombat : DamageableObject
 
     public Transform weaponParent;
 
+    public List<Ammo> ammoCap = new List<Ammo>();
+
     public List<GameObject> possibleWeapons = new List<GameObject>();
     List<GameObject> avaliableWeapons = new List<GameObject>();
 
     int currentWeaponIndex = 0;
 
-    public int defaultFOV = 60;
-    public int zoomFOV = 50;
+    public bool ammoSelection;
 
     // Start is called before the first frame update
     void Start()
@@ -36,10 +45,26 @@ public class PlayerCombat : DamageableObject
     {
         if(avaliableWeapons.Count > 0)
         {
+            if(Input.GetButtonDown("Reload")) ammoSelection = !ammoSelection;
+
+            if(ammoSelection)
+            {
+                if(Input.GetButtonDown("ReloadCycleRight")){
+                    currentWeapon.currentAmmoIndex += 1;
+                    if(currentWeapon.currentAmmoIndex >= ammoCap.Count) currentWeapon.currentAmmoIndex = 0;
+                }
+                if(Input.GetButtonDown("ReloadCycleLeft")){
+                    currentWeapon.currentAmmoIndex -= 1;
+                    if(currentWeapon.currentAmmoIndex < 0) currentWeapon.currentAmmoIndex = ammoCap.Count - 1;
+                }
+            }
+
+
             aiming = Input.GetMouseButton(1);    
             animator.SetBool("Aiming",aiming);
-            if(aiming){
-                if(Input.GetMouseButton(0) && !playerController.isSprinting()) {
+            if(aiming)
+            {
+                if(Input.GetMouseButton(0) && !playerController.isSprinting() && !ammoSelection) {
                     currentWeapon.Fire();
                 }  
             }
@@ -86,8 +111,18 @@ public class PlayerCombat : DamageableObject
 
         print(added.name);
         GameObject prefab = possibleWeapons.Where(obj => obj.name == added.name).SingleOrDefault();
+        prefab.GetComponent<Weapon>().playerCombat = this;
         avaliableWeapons.Add(prefab);
         if(avaliableWeapons.Count == 1) EquipWeapon(0);
+    }
+
+    public void AddTypeToAmmoCap(Ammo ammoType)
+    {
+        ammoCap.Add(ammoType);
+    }
+    
+    public void IncreaseAmmoCount(int ammoIndex, int increaseCount){
+        ammoCap.ToArray()[ammoIndex].count += increaseCount;
     }
 
     void EquipNeighbourWeapon(int direction)

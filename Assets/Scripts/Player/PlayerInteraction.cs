@@ -29,10 +29,7 @@ public class PlayerInteraction : MonoBehaviour
                         viewed.AddComponent<Outline>();
 
                     if(Input.GetButtonDown("Interact")){
-                        if(viewed.GetComponent<Weapon>()){
-                            GetComponent<PlayerCombat>().AddToAvaliableWeapons(viewed);
-                            Destroy(viewed.gameObject);
-                        }
+                        InteractCorrectly(viewed);
                     }
                 }
             }
@@ -44,6 +41,32 @@ public class PlayerInteraction : MonoBehaviour
         } 
 
         lastViewed = viewed;
+    }
+
+    void InteractCorrectly(GameObject interactable)
+    {
+        PlayerCombat playerCombat = GetComponent<PlayerCombat>();
+        if(interactable.GetComponent<Weapon>())
+        {
+            playerCombat.AddToAvaliableWeapons(interactable);
+            Destroy(interactable.gameObject);
+        }
+
+        if(interactable.GetComponent<LootSource>())
+        {
+            LootSource interactableLootSource = interactable.GetComponent<LootSource>();
+
+            switch (interactableLootSource.type)
+            {
+                case LootSource.LootType.Ammo:
+
+                    playerCombat.IncreaseAmmoCount(interactableLootSource.ammoIndex,interactableLootSource.lootCount);
+                    interactable.tag = "Untagged";
+                    Destroy(interactable.GetComponent<Outline>());
+                    interactable.GetComponent<Renderer>().materials[1].DisableKeyword("_EMISSION");
+                    break;
+            }
+        }
     }
 
 

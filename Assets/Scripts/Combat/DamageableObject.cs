@@ -13,7 +13,8 @@ public class DamageableObject : MonoBehaviour
 
     public GameObject heathBarPrefab;
     public Transform healthBarPoint;
-    GameObject healthBarInstance;
+    [HideInInspector]
+    public GameObject healthBarInstance;
     bool healthBarCreated;
     
     public void CreateHealthBar()
@@ -28,7 +29,7 @@ public class DamageableObject : MonoBehaviour
     {
         if(healthBarCreated){
             float healthRatio = currentHealth/maxHealth;
-            healthBarInstance.transform.GetChild(1).GetComponent<RectTransform>().localScale = new Vector3(healthRatio,1,1);
+            healthBarInstance.transform.Find("HealthGreen").GetComponent<RectTransform>().localScale = new Vector3(healthRatio,1,1);
         }
     }
 
@@ -42,8 +43,12 @@ public class DamageableObject : MonoBehaviour
     public float GetHealth(){
         return currentHealth;
     }
+    public float GetMaxHealth(){
+        return maxHealth;
+    }
 
-    public void Die(){
+
+    public virtual void Die(){
         Destroy(healthBarInstance);
         Destroy(gameObject);
     }

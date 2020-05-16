@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public abstract class Weapon : MonoBehaviour
 {
 
@@ -11,18 +12,22 @@ public abstract class Weapon : MonoBehaviour
     //Current cooldown timer for weapon fire rate
     float fireRateTimer = 0.0f;
 
+    public int currentAmmoIndex;
+
     public bool semiAutomatic;
     //The weapon can be fired
     bool canFire = true;
     //The weapon is currently being used
     bool selected;
     
-    //The projectile object the weapon fires
-    public Projectile projectile;
     //The point the projectile launches from
     public Transform projectileFirePoint;
     //The velocity the projectile is launched at
     public float projectileVelocity;
+
+    public AudioClip firingSound;
+
+    public PlayerCombat playerCombat;
 
     void Update(){
         if(isSelected()){
@@ -33,18 +38,24 @@ public abstract class Weapon : MonoBehaviour
     //Fire the weapon
     public void Fire()
     {
-        if(canFire)
-        {
-            Debug.Log(gameObject.name + " Fired");
-            
+        if(canFire && GetAmmoCount() > 0)
+        {            
             //Instantiate a new projectile and store the projectile object
-            Projectile projectileInstance = Instantiate(projectile.gameObject).GetComponent<Projectile>();
+            Projectile projectileInstance = Instantiate(GetAmmoProjectile()).GetComponent<Projectile>();
 
             //Set the projectiles position and rotation ready to be lauched
             projectileInstance.SetLaunchPosition(projectileFirePoint);
             //Lauch the projectile
             projectileInstance.LaunchProjectile(projectileVelocity);
-            
+
+            if(firingSound != null)
+            {
+                GetComponent<AudioSource>().clip = firingSound;
+                GetComponent<AudioSource>().Play();
+            }
+
+            ChangeAmmoCount(-1);
+
             //Reset the weapon fire rate timer
             ResetCooldownTimer();
         }
@@ -64,6 +75,19 @@ public abstract class Weapon : MonoBehaviour
     public bool isSelected()
     {
         return selected;
+    }
+
+    GameObject GetAmmoProjectile()
+    {
+        return playerCombat.ammoCap[currentAmmoIndex].projectile;
+    }
+    void ChangeAmmoCount(int change)
+    {
+        playerCombat.ammoCap.ToArray()[currentAmmoIndex].count += change;
+    }
+    int GetAmmoCount()
+    {
+        return playerCombat.ammoCap[currentAmmoIndex].count;
     }
 
     //Logic to control weapon fire rate

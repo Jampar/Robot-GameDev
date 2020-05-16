@@ -23,16 +23,40 @@ public abstract class Enemy : DamageableObject
     [Range(-5,5)]
     public int hostileLevel;
 
+    [Space]
+    [Header("Enemy Behaviour")]
+
+    Vector3 target;
+
+    public enum HostileBehaviour {ChasePlayer, StandGround, Retreat};
+    public enum IdleBehaviour {Wander, Stand ,Patrol};
+
+    public HostileBehaviour hostileBehaviour;
+    public IdleBehaviour idleBehaviour;
+
+
     bool alerted;
+
+    [Space]
+
+    [Header("Enemy Patrol")]
+    public Transform[] patrolRoute;
 
     public enum PatrolType {Cyclic, Linear}
     public PatrolType patrolType;
 
-    public Transform[] patrolRoute;
-    int patrolPointNumber = 0;
-    int patrolPointNumberInc = 1;
+    public int patrolPointNumber = 0;
+    public int patrolPointNumberInc = 1;
 
-    Vector3 target;
+    [Space]
+
+    [Header("Enemy Wander")]
+    public float wanderDistance;
+    public float wanderTime;
+    float timer;
+    bool startWandering = false;
+    Vector3 wanderPoint;
+
 
     public GameObject[] GetViewedObjects()  
     {
@@ -78,53 +102,68 @@ public abstract class Enemy : DamageableObject
         return false;
     }
 
-    public void SetAvoidanceDistance(float distance){
+    public void PerformHostileBehaviour()
+    {
+        switch(hostileBehaviour)
+        {
+            case HostileBehaviour.ChasePlayer:
+                ChasePlayer();
+                break;
+            
+            case HostileBehaviour.StandGround:
+                SetTarget(transform.position);
+                break;
+
+        }
+    }
+
+    public void PerformIdleBehaviour()
+    {
+        switch(idleBehaviour)
+        {
+            case IdleBehaviour.Wander:
+                Wander();
+                break;
+
+            case IdleBehaviour.Stand:
+                break;
+
+            case IdleBehaviour.Patrol:
+                FollowPatrol();
+                break;
+        }
+    }
+
+    void SetAvoidanceDistance(float distance){
         GetComponent<NavMeshAgent>().stoppingDistance = distance;
     }
 
-    public void MoveToTarget()
+    void MoveToTarget()
     {
         GetComponent<NavMeshAgent>().SetDestination(target);
     }
 
-    public void SetTarget(Vector3 _target){
+    void SetTarget(Vector3 _target){
         target = _target;
     }
 
-    public void FollowPatrol()
+    void FollowPatrol()
     {
         SetTarget(patrolRoute[patrolPointNumber].position);
         MoveToTarget();
 
-        if(Vector3.Distance(transform.position,patrolRoute[patrolPointNumber].position) < 0.1)
-        {
-            if(patrolPointNumberInc > 0)
+        if(isAtTarget()){
+
+            patrolPointNumber += patrolPointNumberInc;
+
+            if(patrolPointNumber >= patrolRoute.Length || patrolPointNumber < 0)
             {
-                if(patrolPointNumber + patrolPointNumberInc < patrolRoute.Length)
-                {
-                    patrolPointNumber += patrolPointNumberInc;
-                }
-                else
-                {
-                    ResetPatrol();
-                }
+                ResetPatrol();
             }
-            else if(patrolPointNumberInc < 0)
-            {
-                if(patrolPointNumber + patrolPointNumberInc >=  0)
-                {
-                    patrolPointNumber += patrolPointNumberInc;
-                }
-                else
-                {
-                    ResetPatrol();
-                }
-            }
-            
         }
     }
 
-    public void ChasePlayer(){
+    void ChasePlayer(){
         SetTarget(GameObject.FindGameObjectWithTag("Player").transform.position);
         MoveToTarget();
     }
@@ -135,6 +174,14 @@ public abstract class Enemy : DamageableObject
 
     public bool isAlerted(){
         return alerted;
+    }
+
+    public bool isDamaged()
+    {
+        if(GetHealth() < GetMaxHealth()){
+            return true;
+        }
+        return false;
     }
 
     void ResetPatrol()
@@ -148,10 +195,53 @@ public abstract class Enemy : DamageableObject
 
             case PatrolType.Linear:
                 patrolPointNumberInc *= -1;
+                patrolPointNumber += patrolPointNumberInc;
                 break;
         }
     }
     
+    void Wander()
+    {       
+        if(!startWandering) timer = wanderTime;
+
+         timer += Time.deltaTime;
+   
+        if(timer >= wanderTime)
+        {
+            Vector3 newPos  = RandomNavSphere(transform.position, wanderDistance, -1);
+            SetTarget(newPos);
+            timer = 0;
+        }
+
+        MoveToTarget();
+
+        startWandering = true;
+
+    }
+
+    bool isAtTarget()
+    {
+        float distance = Vector3.Distance(transform.position,target);
+
+        if(distance < 0.5 || GetComponent<NavMeshAgent>().isStopped)
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static Vector3 RandomNavSphere (Vector3 origin, float distance, int layermask) {
+            Vector3 randomDirection = UnityEngine.Random.insideUnitSphere * distance;
+           
+            randomDirection += origin;
+           
+            NavMeshHit navHit;
+           
+            NavMesh.SamplePosition (randomDirection, out navHit, distance, layermask);
+           
+            return navHit.position;
+        }
+
     void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
@@ -171,7 +261,7 @@ public abstract class Enemy : DamageableObject
 
         Gizmos.color = Color.red;
         #region Patrol Gizmos
-        if(patrolRoute.Length > 0){
+        if(idleBehaviour == IdleBehaviour.Patrol){
             Transform lastPoint = null;
             foreach(Transform point in patrolRoute)
             {
@@ -184,8 +274,11 @@ public abstract class Enemy : DamageableObject
 
             if(patrolType == PatrolType.Cyclic)
                 Gizmos.DrawLine(patrolRoute[patrolRoute.Length-1].position,patrolRoute[0].position);
-            #endregion
-        
         }
+        #endregion
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawCube(target, Vector3.one * 0.25f);
+
     }
 }

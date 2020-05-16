@@ -7,13 +7,13 @@ public class Imp : Enemy
     void Update()
     {
         if(!isAlerted()){
-            FollowPatrol();
+            PerformIdleBehaviour();
         }
         else 
         {
-            ChasePlayer();
+            PerformHostileBehaviour();
         }
 
-        if(IsPlayerViewed() || IsPlayerHeard()) AlertEnemy();        
+        if(IsPlayerViewed() || IsPlayerHeard() || isDamaged()) AlertEnemy();        
     }   
 }
