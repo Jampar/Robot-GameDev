@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class LootSource : MonoBehaviour
+public class LootSource : Interactable
 {
     public enum LootType {Ammo, Health}
     public LootType type;

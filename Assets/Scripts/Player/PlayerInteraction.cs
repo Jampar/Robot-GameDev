@@ -6,7 +6,7 @@ using cakeslice;
 public class PlayerInteraction : MonoBehaviour
 {
 
-    float interactionRange = 4.0f;
+    float interactionRange = 5.0f;
     GameObject lastViewed;
     
     // Start is called before the first frame update
@@ -23,13 +23,17 @@ public class PlayerInteraction : MonoBehaviour
         if(viewed != null)
         {   
             if(Vector3.Distance(transform.position,viewed.transform.position) < interactionRange){         
-                if(viewed.tag == "Interactable")
+                if(viewed.GetComponent<Interactable>())
                 {
+                    Interactable interactable = viewed.GetComponent<Interactable>();
+                    interactable.CreateTooltip();
+
                     if(!viewed.GetComponent<Outline>())
                         viewed.AddComponent<Outline>();
 
                     if(Input.GetButtonDown("Interact")){
-                        InteractCorrectly(viewed);
+                        InteractCorrectly(interactable);
+                        interactable.DestroyToolTip();
                     }
                 }
             }
@@ -38,17 +42,19 @@ public class PlayerInteraction : MonoBehaviour
         if(lastViewed != null && viewed != lastViewed)
         {
             if(lastViewed.GetComponent<Outline>()) Destroy(lastViewed.GetComponent<Outline>());
+            if(lastViewed.GetComponent<Interactable>()) lastViewed.GetComponent<Interactable>().DestroyToolTip();
         } 
 
         lastViewed = viewed;
     }
 
-    void InteractCorrectly(GameObject interactable)
+    void InteractCorrectly(Interactable interactable)
     {
         PlayerCombat playerCombat = GetComponent<PlayerCombat>();
+      
         if(interactable.GetComponent<Weapon>())
         {
-            playerCombat.AddToAvaliableWeapons(interactable);
+            playerCombat.AddToAvaliableWeapons(interactable.gameObject);
             Destroy(interactable.gameObject);
         }
 
@@ -64,6 +70,7 @@ public class PlayerInteraction : MonoBehaviour
                     interactable.tag = "Untagged";
                     Destroy(interactable.GetComponent<Outline>());
                     interactable.GetComponent<Renderer>().materials[1].DisableKeyword("_EMISSION");
+                    Destroy(interactable);
                     break;
             }
         }
