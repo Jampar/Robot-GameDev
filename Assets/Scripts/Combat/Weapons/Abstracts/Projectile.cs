@@ -15,6 +15,8 @@ public abstract class Projectile : MonoBehaviour
     public float explosionRadius;
     public float explosionDamage;
 
+    public GameObject damageOrigin;
+
     public void SetLaunchPosition(Transform launchPoint){
         transform.position = launchPoint.position;
         transform.rotation = launchPoint.rotation;
@@ -28,7 +30,7 @@ public abstract class Projectile : MonoBehaviour
 
     public void Hit(Collision collision)
     {   
-        ApplyDamage(collision.gameObject,damageType);
+        ApplyDamage(collision.gameObject,damageType,damageOrigin);
         if(isExplosive) Explode();
         Destroy(gameObject,0f);
     }
@@ -44,19 +46,19 @@ public abstract class Projectile : MonoBehaviour
             Collider[] colls = Physics.OverlapSphere(transform.position,explosionRadius);
             foreach(Collider coll in colls)
             {
-                ApplyDamage(coll.gameObject,DamageMatrix.DamageTypes.Explosive);
+                ApplyDamage(coll.gameObject,DamageMatrix.DamageTypes.Explosive,damageOrigin);
             }
         }
     }
 
-    void ApplyDamage(GameObject applicant, DamageMatrix.DamageTypes type)
+    void ApplyDamage(GameObject applicant, DamageMatrix.DamageTypes type,GameObject origin)
     {
         if(applicant.GetComponent<DamageableObject>())
         {
             DamageableObject damageable = applicant.GetComponent<DamageableObject>();
             float damage = DamageMatrix.GetDamage(damageable.damObType,type);
             
-            damageable.DealDamage(damage);
+            damageable.DealDamage(damage, origin);
             
             if(damageable.GetHealth() <= 0.0f)
             {

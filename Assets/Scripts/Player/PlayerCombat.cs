@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 [System.Serializable]
@@ -29,6 +30,8 @@ public class PlayerCombat : DamageableObject
     int currentWeaponIndex = 0;
 
     public bool ammoSelection;
+
+    public Image crossHair;
 
     // Start is called before the first frame update
     void Start()
@@ -59,7 +62,7 @@ public class PlayerCombat : DamageableObject
                 }
             }
 
-
+           
             aiming = Input.GetMouseButton(1);    
             animator.SetBool("Aiming",aiming);
             if(aiming)
@@ -67,6 +70,20 @@ public class PlayerCombat : DamageableObject
                 if(Input.GetMouseButton(0) && !playerController.isSprinting() && !ammoSelection) {
                     currentWeapon.Fire();
                 }  
+
+                if(isCrossHairHostile())
+                {
+                    crossHair.color = Color.red;
+                }
+                else
+                {
+                    crossHair.color = Color.gray;
+                }
+
+            }
+            else
+            {
+                crossHair.color = Color.gray;
             }
 
             if(!aiming){
@@ -143,8 +160,8 @@ public class PlayerCombat : DamageableObject
 
     Vector3 AimDirection()
     {
-        RaycastHit hit;
         Vector3 targetPos = Vector3.zero;
+        RaycastHit hit;
 
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
 
@@ -160,6 +177,19 @@ public class PlayerCombat : DamageableObject
         }
 
         return targetPos;
+    }
+
+    bool isCrossHairHostile()
+    {
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+
+        if(Physics.Raycast(ray, out hit))
+        {
+            if(hit.transform.GetComponent<DamageableObject>())  return true;
+        }
+        return false;
+
     }
 }
 

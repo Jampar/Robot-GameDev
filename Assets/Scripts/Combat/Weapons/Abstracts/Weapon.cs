@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
-public abstract class Weapon : MonoBehaviour
+public abstract class Weapon : Interactable
 {
-
+    [Space]
+    [Header("Weapon")]
     //The number of times the weapon fires in a second
     public float weaponFireRate;
 
@@ -27,6 +28,7 @@ public abstract class Weapon : MonoBehaviour
 
     public AudioClip firingSound;
 
+    [HideInInspector]
     public PlayerCombat playerCombat;
 
     void Update(){
@@ -47,6 +49,8 @@ public abstract class Weapon : MonoBehaviour
             projectileInstance.SetLaunchPosition(projectileFirePoint);
             //Lauch the projectile
             projectileInstance.LaunchProjectile(projectileVelocity);
+
+            projectileInstance.damageOrigin = playerCombat.gameObject;
 
             if(firingSound != null)
             {

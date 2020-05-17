@@ -7,6 +7,7 @@ public static class DamageMatrix
     static float[,] damageMatrix = new float[,] {
                                                 {5.0f,5.0f},
                                                 {5.0f,10.0f},
+                                                {5.0f,15.0f}
                                                 };
 
     public enum DamageTypes
@@ -18,7 +19,8 @@ public static class DamageMatrix
     public enum DamObTypes
     {
         Structure,
-        Imp
+        Imp,
+        Player
     };
 
     public static float GetDamage(DamObTypes objectType, DamageTypes damageType)

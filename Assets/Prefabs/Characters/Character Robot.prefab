@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 238826127}
   m_Layer: 2
-  m_Name: GameObject
+  m_Name: Health Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 238826126}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 6, z: 0}
+  m_LocalPosition: {x: -1.729, y: 6.138, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1161964802673973069}
@@ -825,9 +825,9 @@ GameObject:
   - component: {fileID: 6150391081715441438}
   - component: {fileID: 6150391081715441439}
   - component: {fileID: 6150391081715441433}
-  - component: {fileID: 6150391081715441437}
-  - component: {fileID: 1829725162}
   - component: {fileID: 1829725166}
+  - component: {fileID: 378549230}
+  - component: {fileID: 1829725162}
   - component: {fileID: 1829725168}
   m_Layer: 2
   m_Name: Character Robot
@@ -867,7 +867,7 @@ CharacterController:
   serializedVersion: 2
   m_Height: 6
   m_Radius: 0.5
-  m_SlopeLimit: 35
+  m_SlopeLimit: 40
   m_StepOffset: 0.2
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
@@ -909,8 +909,20 @@ MonoBehaviour:
   hipBone: {fileID: 7594199949946079277}
   matchHead: 0
   matchChest: 0
-  matchHip: 0
---- !u!114 &6150391081715441437
+  matchHip: 1
+--- !u!114 &1829725166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2772943088148374878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b09c9a2b5a3f47b42b60dd0ef00e2295, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &378549230
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -922,20 +934,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b11515f9a6b06e4687ee8ebbf819f6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damObType: 0
-  currentHealth: 0
-  maxHealth: 0
-  heathBarPrefab: {fileID: 0}
-  healthBarPoint: {fileID: 0}
+  Name: Robot
+  damObType: 2
+  currentHealth: 100
+  maxHealth: 100
+  heathBarPrefab: {fileID: 7051190910238846357, guid: 87185a3a3800e464e8acf2f75a10c576, type: 3}
+  healthBarPoint: {fileID: 238826127}
   healthBarInstance: {fileID: 0}
   aiming: 0
   weaponParent: {fileID: 1368124385}
+  ammoCap:
+  - projectile: {fileID: 1791314284641421070, guid: 4ae95731b53d36c4db4d9821c29625bc, type: 3}
+    count: 0
+  - projectile: {fileID: 1791314284641421070, guid: c0099779397c40446b6c3e559300c657, type: 3}
+    count: 0
   possibleWeapons:
   - {fileID: 2417237490426861407, guid: 230939b2c362c214cb320a194bf1f233, type: 3}
-  - {fileID: 642323922886094232, guid: 348d374f430854f4fa2cf148ffefb1e2, type: 3}
-  - {fileID: 1984601175753648282, guid: d8931cf7f44b5754c9feef7b57224148, type: 3}
-  defaultFOV: 60
-  zoomFOV: 50
+  ammoSelection: 0
+  crossHair: {fileID: 0}
 --- !u!82 &1829725162
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1032,18 +1048,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &1829725166
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2772943088148374878}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b09c9a2b5a3f47b42b60dd0ef00e2295, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1829725168
 MonoBehaviour:
   m_ObjectHideFlags: 0

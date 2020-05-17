@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d1b11eef8b3f49a4f904adee181603bd
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - tooltip: {instanceID: 0}
+  - tooltipGameobject: {fileID: 1715236166469948067, guid: 99630414df410714c9ace22c7b04ad75, type: 3}
+  - tooltipPoint: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

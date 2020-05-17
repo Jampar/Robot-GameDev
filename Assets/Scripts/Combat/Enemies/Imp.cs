@@ -6,14 +6,12 @@ public class Imp : Enemy
 {
     void Update()
     {
-        if(!isAlerted()){
-            PerformIdleBehaviour();
-        }
-        else 
-        {
-            PerformHostileBehaviour();
-        }
+        AlertManagement();
+        PerformBehaviour();
+        MaintainAlertMeter();
 
-        if(IsPlayerViewed() || IsPlayerHeard() || isDamaged()) AlertEnemy();        
+        if(canMelee()){
+            Melee();
+        }
     }   
 }

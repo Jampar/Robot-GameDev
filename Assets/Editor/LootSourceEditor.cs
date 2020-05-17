@@ -13,6 +13,10 @@ public class LootSourceEditor : Editor {
 
     public override void OnInspectorGUI()
     {
+        source.tooltip = (InteractableTooltip)EditorGUILayout.ObjectField("Tooltip",source.tooltip, typeof(ScriptableObject), true);
+        source.tooltipPoint = (Transform)EditorGUILayout.ObjectField("Tooltip Point",source.tooltipPoint, typeof(Transform), true);
+        source.tooltipGameobject = (GameObject)EditorGUILayout.ObjectField("Tooltip GameObject",source.tooltipGameobject, typeof(GameObject), true);
+
         source.type = (LootSource.LootType)EditorGUILayout.EnumPopup("Loot Type", source.type);
         switch(source.type)
         {

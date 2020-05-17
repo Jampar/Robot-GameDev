@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 using UnityEditor;
 
 [RequireComponent(typeof(NavMeshAgent))]
@@ -17,26 +18,54 @@ public abstract class Enemy : DamageableObject
     [Range(1,50)]
     public float viewDetectionRange;
 
-    [Range(1,10)]
+    [Range(1,50)]
     public float audioDetectionRange;
-
-    [Range(-5,5)]
-    public int hostileLevel;
 
     [Space]
     [Header("Enemy Behaviour")]
 
     Vector3 target;
 
-    public enum HostileBehaviour {ChasePlayer, StandGround, Retreat};
+    public enum HostileBehaviour {Chase, StandGround, Retreat};
     public enum IdleBehaviour {Wander, Stand ,Patrol};
 
     public HostileBehaviour hostileBehaviour;
     public IdleBehaviour idleBehaviour;
 
+    public float idleSpeed;
+    public float hostileSpeed;
 
+    [Space]
+    public string[] FoeComponents;
+
+
+    float alertLevel; // 1 == Alert, 0 == Idle
+    [Space]
+    public float alertLevelRate;
+    public float idleLevelRate;
+    public float searchAlertThreshold;
+    public GameObject alertLevelPrefab;
+    GameObject alertMeterInstance;
     bool alerted;
+    GameObject alertedBy;
+    bool foeFound;
 
+    public float stopBorder;
+    [Space]
+
+    public float soundThreshold;
+    float searchTimer;
+    public float searchTime;
+    bool searching;
+    Vector3 searchPosition;
+
+    [Space]
+
+    public float meleeReach;
+    public float meleeDamage;
+    float meleeTimer;
+    public float meleeCooldown;
+    bool startmeleeCooldown;
     [Space]
 
     [Header("Enemy Patrol")]
@@ -47,16 +76,16 @@ public abstract class Enemy : DamageableObject
 
     public int patrolPointNumber = 0;
     public int patrolPointNumberInc = 1;
-
     [Space]
 
     [Header("Enemy Wander")]
     public float wanderDistance;
-    public float wanderTime;
+    public float wanderPauseTime;
     float timer;
     bool startWandering = false;
     Vector3 wanderPoint;
-
+    public float wanderHeightRestriction;
+    public float wanderBorderAvoidanceDistance;
 
     public GameObject[] GetViewedObjects()  
     {
@@ -65,49 +94,85 @@ public abstract class Enemy : DamageableObject
 
         foreach (Collider collider in colliders)
         {
-            if(Vector3.Angle(transform.forward,collider.transform.position - transform.position) < viewDetectionAngle) 
+            if(Vector3.Angle(transform.forward,collider.transform.position - transform.position) < viewDetectionAngle/2) 
                 viewed.Add(collider.gameObject);
         }
 
         return viewed.ToArray();
     }
-    
-    public GameObject[] GetHeardObjects()
+    public GameObject GetLoudestHeardObject()
     {
-        List<GameObject> heard = new List<GameObject>();
         Collider[] colliders = Physics.OverlapSphere(transform.position,audioDetectionRange);
+        
+        GameObject loudest = null;
+        float loudestDeliveredSound = 0.0f;
 
         foreach (Collider collider in colliders)
         {
-            heard.Add(collider.gameObject);
+            if(collider.GetComponent<AudioSource>())
+            {
+                AudioSource heardSource = collider.GetComponent<AudioSource>();
+                if(heardSource.isPlaying){
+                    float deliveredSound = heardSource.volume / Mathf.Pow(Vector3.Distance(heardSource.transform.position,transform.position),2) * heardSource.priority;
+                    //print(heardSource.name + ' ' + deliveredSound.ToString());
+                    if(deliveredSound > loudestDeliveredSound && deliveredSound > soundThreshold){
+                        loudest = heardSource.gameObject;
+                    }
+                }
+            }
         }
-
-        return heard.ToArray();
+        return loudest;
     }
-
-    public bool IsPlayerViewed(){
+    
+    GameObject currentFoe;
+    
+    public bool IsFoeViewed(){
         GameObject[] viewedObjects = GetViewedObjects();
+
         foreach(GameObject viewedObject in viewedObjects)
         {
-            if(viewedObject.tag == "Player")    return true;
+            foreach (string component in FoeComponents){
+                
+                if(viewedObject.GetComponent(component) != null)
+                {
+                    currentFoe = viewedObject;
+                    return true;
+                }
+            }
         }
         return false;
     }
-    public bool IsPlayerHeard(){
-        GameObject[] heardObjects = GetHeardObjects();
-        foreach(GameObject heardObject in heardObjects)
+    public bool IsFoeHeard(){
+        GameObject heardObject = GetLoudestHeardObject();
+        if(heardObject != null)
         {
-            if(heardObject.tag == "Player")    return true;
+            return true;
         }
-        return false;
+        else
+        {
+            return false;
+        }
     }
 
-    public void PerformHostileBehaviour()
+    public bool isSearching(){
+        return searching;
+    }
+    void SearchTimer()
+    { 
+        timer -= Time.deltaTime;
+        if(timer <= 0.0f)
+        {
+            searching = false;
+        }
+    }
+
+    void PerformHostileBehaviour()
     {
+        GetComponent<NavMeshAgent>().speed = hostileSpeed;
         switch(hostileBehaviour)
         {
-            case HostileBehaviour.ChasePlayer:
-                ChasePlayer();
+            case HostileBehaviour.Chase:
+                ChaseFoe();
                 break;
             
             case HostileBehaviour.StandGround:
@@ -116,9 +181,16 @@ public abstract class Enemy : DamageableObject
 
         }
     }
-
-    public void PerformIdleBehaviour()
+    void PerformSearch()
     {
+        SearchTimer();
+        SetTarget(searchPosition);
+        MoveToTarget();
+        
+    }
+    void PerformIdleBehaviour()
+    {
+        GetComponent<NavMeshAgent>().speed = idleSpeed;
         switch(idleBehaviour)
         {
             case IdleBehaviour.Wander:
@@ -133,18 +205,114 @@ public abstract class Enemy : DamageableObject
                 break;
         }
     }
+    public void PerformBehaviour(){
+        if(GetAlertLevel() == 1) PerformHostileBehaviour();
+        else if (GetAlertLevel() >= searchAlertThreshold) Search();
+        else PerformIdleBehaviour();
+    }
 
-    void SetAvoidanceDistance(float distance){
-        GetComponent<NavMeshAgent>().stoppingDistance = distance;
+    public void AlertEnemy()
+    {
+        alertedBy = currentFoe;
+        alertLevel = 1;
+        UpdateAlertMeter();
+
+        alerted = true;
+    }
+    public bool isAlerted(){
+        return alerted;
+    }
+    public float GetAlertLevel(){
+        return alertLevel;
+    }
+    public void IncreaseAlertLevel()
+    {
+        if(alertLevel < 1)
+        {
+            alertLevel += alertLevelRate * Time.deltaTime;
+        }
+        if(alertLevel >= 1) alertLevel = 1;
+    }
+    public void DecreaseAlertLevel()
+    {
+        if(alertLevel > 0)
+        {
+            alertLevel -= idleLevelRate * Time.deltaTime;
+        }
+        if(alertLevel < 0) alertLevel = 0;
+    }
+    public void SetAlertLevel(float level){
+        alertLevel = level;
+    }
+    public void AlertManagement(){
+        if(IsFoeViewed()) IncreaseAlertLevel();
+        else if(IsFoeHeard()) SetAlertLevel(searchAlertThreshold);
+        else if(!isSearching()) DecreaseAlertLevel();
+        else if(isDamaged()) {
+            SetAlertLevel(1);
+            currentFoe = damagedBy;
+        }
+    }
+
+    public void Search()
+    {
+        if(!isSearching()){
+            timer = searchTime;
+            searching = true;
+
+            searchPosition = GetLoudestHeardObject().transform.position;
+        }
+        PerformSearch();
+
+    }
+
+    void CreateAlertMeter()
+    {
+        if(alertMeterInstance == null){
+            alertMeterInstance = Instantiate(alertLevelPrefab);
+            alertMeterInstance.transform.position = healthBarPoint.position;
+            alertMeterInstance.transform.SetParent(transform);
+        }
+    }
+    void UpdateAlertMeter()
+    {
+        if(alertMeterInstance != null)
+        {
+            alertMeterInstance.transform.Find("Alert").localScale = Vector3.one * alertLevel;
+        }
+    }
+    void DestroyAlertMeter()
+    {
+        if(alertMeterInstance != null){
+            Destroy(alertMeterInstance);
+        }
+    }
+    public void MaintainAlertMeter()
+    {
+        if(GetAlertLevel() > 0 && GetAlertLevel() < 1) CreateAlertMeter();
+        if(GetAlertLevel() == 0 || GetAlertLevel() == 1) DestroyAlertMeter();
+        if(isDamaged()) DestroyAlertMeter();
+        UpdateAlertMeter();
     }
 
     void MoveToTarget()
     {
-        GetComponent<NavMeshAgent>().SetDestination(target);
+        if(Vector3.Distance(transform.position, target) > stopBorder)
+            GetComponent<NavMeshAgent>().SetDestination(target);
+        
     }
-
     void SetTarget(Vector3 _target){
         target = _target;
+    }
+    bool isAtTarget()
+    {
+        float distance = Vector3.Distance(transform.position,target);
+
+        if(distance < 0.5 || GetComponent<NavMeshAgent>().isStopped)
+        {
+            return true;
+        }
+        return false;
     }
 
     void FollowPatrol()
@@ -161,29 +329,7 @@ public abstract class Enemy : DamageableObject
                 ResetPatrol();
             }
         }
-    }
-
-    void ChasePlayer(){
-        SetTarget(GameObject.FindGameObjectWithTag("Player").transform.position);
-        MoveToTarget();
-    }
-
-    public void AlertEnemy(){
-        alerted = true;
-    }
-
-    public bool isAlerted(){
-        return alerted;
-    }
-
-    public bool isDamaged()
-    {
-        if(GetHealth() < GetMaxHealth()){
-            return true;
-        }
-        return false;
-    }
-
+    }    
     void ResetPatrol()
     {
         switch(patrolType)
@@ -200,36 +346,96 @@ public abstract class Enemy : DamageableObject
         }
     }
     
+    void ChaseFoe()
+    {
+        if(currentFoe != null)
+            SetTarget(currentFoe.transform.position);
+        MoveToTarget();
+    }
+
+    public bool isDamaged()
+    {
+        if(GetHealth() < GetMaxHealth()){
+            return true;
+        }
+        return false;
+    }
+
+    public bool canMelee()
+    {
+        if(currentFoe != null && !startmeleeCooldown){
+            if (Vector3.Distance(currentFoe.transform.position,transform.position) < meleeReach && currentFoe.GetComponent<DamageableObject>()) 
+                return true;
+            else 
+                return false;
+
+        }
+        else
+        {   if(startmeleeCooldown)
+            {
+                meleeTimer -= Time.deltaTime;
+                if(meleeTimer <= 0){
+                    startmeleeCooldown = false;
+                }
+            }   
+            return false;
+        }
+    }
+    public void Melee()
+    {
+        print("Hit " + currentFoe.name);
+        currentFoe.GetComponent<DamageableObject>().DealDamage(meleeDamage,gameObject);
+        startmeleeCooldown = true;
+        meleeTimer = meleeCooldown;
+    }
+
     void Wander()
     {       
-        if(!startWandering) timer = wanderTime;
+        if(!startWandering) timer = wanderPauseTime;
 
          timer += Time.deltaTime;
    
-        if(timer >= wanderTime)
+        if(timer >= wanderPauseTime)
         {
             Vector3 newPos  = RandomNavSphere(transform.position, wanderDistance, -1);
-            SetTarget(newPos);
-            timer = 0;
+            
+            if (AvoidingBorder(newPos))
+            {
+                if(!isHeightRestricted(newPos))
+                {
+                    SetTarget(newPos);
+                    timer = 0;
+                }
+            }
         }
 
         MoveToTarget();
 
         startWandering = true;
-
     }
-
-    bool isAtTarget()
+    bool AvoidingBorder(Vector3 newDest)
     {
-        float distance = Vector3.Distance(transform.position,target);
-
-        if(distance < 0.5 || GetComponent<NavMeshAgent>().isStopped)
+        NavMeshHit hit;
+        if (NavMesh.FindClosestEdge(newDest, out hit, NavMesh.AllAreas))
+        {
+            if(hit.distance < wanderBorderAvoidanceDistance){
+                return false;
+            }
+        }
+        return true;
+    }
+    bool isHeightRestricted(Vector3 newDest)
+    {
+        if(newDest.y < transform.position.y + wanderHeightRestriction)
+        {
+            return false;
+        }
+        else
         {
             return true;
         }
-        return false;
     }
-    
+
     public static Vector3 RandomNavSphere (Vector3 origin, float distance, int layermask) {
             Vector3 randomDirection = UnityEngine.Random.insideUnitSphere * distance;
            
@@ -279,6 +485,9 @@ public abstract class Enemy : DamageableObject
 
         Gizmos.color = Color.cyan;
         Gizmos.DrawCube(target, Vector3.one * 0.25f);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawCube(searchPosition, Vector3.one * 0.25f);
 
     }
 }
