@@ -6,8 +6,18 @@ public class Imp : Enemy
 {
     void Update()
     {
-        AlertManagement();
-        PerformBehaviour();
+        if(IsFoeViewed()) IncreaseAlertLevel();
+        else if(IsFoeHeard()) SetAlertLevel(searchAlertThreshold);
+        else if(!isSearching()) DecreaseAlertLevel();
+        else if(isDamaged()) {
+            SetAlertLevel(1);
+             SetFoe(damagedBy);
+        }
+
+        if(GetAlertLevel() == 1) PerformHostileBehaviour();
+        else if (GetAlertLevel() >= searchAlertThreshold) Search();
+        else PerformIdleBehaviour();
+
         MaintainAlertMeter();
 
         if(canMelee()){

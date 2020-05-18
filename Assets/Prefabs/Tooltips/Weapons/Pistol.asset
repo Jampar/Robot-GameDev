@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Pistol
   m_EditorClassIdentifier: 
   Name: Pistol
-  Description: It''ll just about kill something
+  Description: Some not so serious firepower
   Icon: {fileID: 21300000, guid: b2aabbb9a959eec4a92dfe90460b6f40, type: 3}

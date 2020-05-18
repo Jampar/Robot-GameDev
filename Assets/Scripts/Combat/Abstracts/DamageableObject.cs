@@ -19,14 +19,16 @@ public class DamageableObject : MonoBehaviour
     public GameObject healthBarInstance;
     bool healthBarCreated;
 
+    [HideInInspector]
     public GameObject damagedBy;
     
     public void CreateHealthBar()
     {
         healthBarInstance = Instantiate(heathBarPrefab);
         healthBarInstance.transform.position = healthBarPoint.position;
-        healthBarInstance.transform.SetParent(transform);
         healthBarInstance.transform.Find("Name").GetComponent<Text>().text = Name;
+        healthBarInstance.transform.SetParent(transform);
+        healthBarInstance.transform.localRotation = Quaternion.Euler(Vector3.zero);
         healthBarCreated = true;
     }
 

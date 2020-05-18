@@ -55,6 +55,7 @@ public abstract class Projectile : MonoBehaviour
     {
         if(applicant.GetComponent<DamageableObject>())
         {
+
             DamageableObject damageable = applicant.GetComponent<DamageableObject>();
             float damage = DamageMatrix.GetDamage(damageable.damObType,type);
             

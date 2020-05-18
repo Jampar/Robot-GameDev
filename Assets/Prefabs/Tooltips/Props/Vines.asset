@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Vines
   m_EditorClassIdentifier: 
   Name: Vines
-  Description: Tough vegetation, a simple firearm should clear this
+  Description: Tough vegetation, a powerful blast should clear this
   Icon: {fileID: 0}

@@ -22,20 +22,31 @@ public class PlayerInteraction : MonoBehaviour
 
         if(viewed != null)
         {   
+            Weapon currentWeapon = null;
+            if(GetComponent<PlayerCombat>().isWeaponEquipped())
+                currentWeapon = GetComponent<PlayerCombat>().GetCurrentWeapon();
+
             if(Vector3.Distance(transform.position,viewed.transform.position) < interactionRange){         
                 if(viewed.GetComponent<Interactable>())
                 {
                     Interactable interactable = viewed.GetComponent<Interactable>();
-                    interactable.CreateTooltip();
+                    if(interactable != currentWeapon){
+                        interactable.CreateTooltip();
 
-                    if(!viewed.GetComponent<Outline>())
-                        viewed.AddComponent<Outline>();
+                        if(!viewed.GetComponent<Outline>())
+                            viewed.AddComponent<Outline>();
 
-                    if(Input.GetButtonDown("Interact")){
-                        InteractCorrectly(interactable);
-                        interactable.DestroyToolTip();
+                        if(Input.GetButtonDown("Interact")){
+                            InteractCorrectly(interactable);
+                            interactable.DestroyToolTip();
+                        }
                     }
                 }
+            }
+            else
+            {
+                if(viewed.GetComponent<Outline>()) Destroy(viewed.GetComponent<Outline>());
+                if(viewed.GetComponent<Interactable>()) viewed.GetComponent<Interactable>().DestroyToolTip();
             }
         }
 

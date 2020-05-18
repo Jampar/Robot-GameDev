@@ -166,7 +166,7 @@ public abstract class Enemy : DamageableObject
         }
     }
 
-    void PerformHostileBehaviour()
+    public void PerformHostileBehaviour()
     {
         GetComponent<NavMeshAgent>().speed = hostileSpeed;
         switch(hostileBehaviour)
@@ -188,7 +188,7 @@ public abstract class Enemy : DamageableObject
         MoveToTarget();
         
     }
-    void PerformIdleBehaviour()
+    public void PerformIdleBehaviour()
     {
         GetComponent<NavMeshAgent>().speed = idleSpeed;
         switch(idleBehaviour)
@@ -204,11 +204,6 @@ public abstract class Enemy : DamageableObject
                 FollowPatrol();
                 break;
         }
-    }
-    public void PerformBehaviour(){
-        if(GetAlertLevel() == 1) PerformHostileBehaviour();
-        else if (GetAlertLevel() >= searchAlertThreshold) Search();
-        else PerformIdleBehaviour();
     }
 
     public void AlertEnemy()
@@ -244,14 +239,9 @@ public abstract class Enemy : DamageableObject
     public void SetAlertLevel(float level){
         alertLevel = level;
     }
-    public void AlertManagement(){
-        if(IsFoeViewed()) IncreaseAlertLevel();
-        else if(IsFoeHeard()) SetAlertLevel(searchAlertThreshold);
-        else if(!isSearching()) DecreaseAlertLevel();
-        else if(isDamaged()) {
-            SetAlertLevel(1);
-            currentFoe = damagedBy;
-        }
+
+    public void SetFoe(GameObject foe){
+        currentFoe = foe;
     }
 
     public void Search()
@@ -260,7 +250,9 @@ public abstract class Enemy : DamageableObject
             timer = searchTime;
             searching = true;
 
-            searchPosition = GetLoudestHeardObject().transform.position;
+            GameObject loudest = GetLoudestHeardObject();
+            if(loudest != null)
+                searchPosition = loudest.transform.position;
         }
         PerformSearch();
 

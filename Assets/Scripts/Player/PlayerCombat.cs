@@ -8,8 +8,10 @@ using UnityEngine.UI;
 [System.Serializable]
 public class Ammo
 {
+    public string ammoName;
     public GameObject projectile;
     public int count;
+    public Sprite ammoIcon;
 }
 
 public class PlayerCombat : DamageableObject
@@ -22,52 +24,69 @@ public class PlayerCombat : DamageableObject
 
     public Transform weaponParent;
 
-    public List<Ammo> ammoCap = new List<Ammo>();
-
-    public List<GameObject> possibleWeapons = new List<GameObject>();
-    List<GameObject> avaliableWeapons = new List<GameObject>();
+    public ArmouryObject armouryObject;
+    List<GameObject> weapons = new List<GameObject>();
 
     int currentWeaponIndex = 0;
 
     public bool ammoSelection;
 
     public Image crossHair;
+    public GameObject weaponUI;
+    Animator weaponUIAnim;
+
+    bool fadeUI = false;
 
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
+        weaponUIAnim = weaponUI.GetComponent<Animator>();
 
-        if(avaliableWeapons.Count > 0)
+        if(weapons.Count > 0)
             EquipWeapon(0);
+
+         WipeAmmoStocks();
+    }
+
+    void WipeAmmoStocks(){
+        foreach(Ammo ammo in armouryObject.ammoBag){
+            ammo.count = 0;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(avaliableWeapons.Count > 0)
+        if(weapons.Count > 0)
         {
             if(Input.GetButtonDown("Reload")) ammoSelection = !ammoSelection;
+            weaponUIAnim.SetBool("Select Ammo", ammoSelection);
 
             if(ammoSelection)
             {
                 if(Input.GetButtonDown("ReloadCycleRight")){
+                    weaponUIAnim.SetTrigger("Clicked E");
                     currentWeapon.currentAmmoIndex += 1;
-                    if(currentWeapon.currentAmmoIndex >= ammoCap.Count) currentWeapon.currentAmmoIndex = 0;
+                    if(currentWeapon.currentAmmoIndex >= currentWeapon.localAmmoSource.Count) currentWeapon.currentAmmoIndex = 0;
                 }
                 if(Input.GetButtonDown("ReloadCycleLeft")){
+                    weaponUIAnim.SetTrigger("Clicked Q");
                     currentWeapon.currentAmmoIndex -= 1;
-                    if(currentWeapon.currentAmmoIndex < 0) currentWeapon.currentAmmoIndex = ammoCap.Count - 1;
+                    if(currentWeapon.currentAmmoIndex < 0) currentWeapon.currentAmmoIndex = currentWeapon.localAmmoSource.Count - 1;
                 }
             }
 
            
-            aiming = Input.GetMouseButton(1);    
-            animator.SetBool("Aiming",aiming);
+            aiming = Input.GetButton("Fire2"); 
+            if(!ammoSelection)  
+                animator.SetBool("Aiming",aiming);
+
             if(aiming)
             {
-                if(Input.GetMouseButton(0) && !playerController.isSprinting() && !ammoSelection) {
+                fadeUI = true;
+                if(Input.GetButton("Fire1") && !playerController.isSprinting() && !ammoSelection) {
                     currentWeapon.Fire();
                 }  
 
@@ -95,21 +114,50 @@ public class PlayerCombat : DamageableObject
             
             currentWeapon.projectileFirePoint.LookAt(AimDirection());
         }
+
+        UpdateWeaponUI();
+    }
+
+    void UpdateWeaponUI()
+    {
+        if(isWeaponEquipped())
+        {
+            weaponUI.SetActive(true);
+            weaponUI.transform.Find("Count").GetComponent<Text>().text = currentWeapon.localAmmoSource.ToArray()[currentWeapon.currentAmmoIndex].count.ToString();
+            weaponUI.transform.Find("Ammo Icon").GetComponent<Image>().sprite = currentWeapon.localAmmoSource.ToArray()[currentWeapon.currentAmmoIndex].ammoIcon;
+            weaponUI.transform.Find("Weapon Icon").GetComponent<Image>().sprite = currentWeapon.weaponIcon;
+            
+
+            if(!ammoSelection){
+                weaponUIAnim.SetBool("Fade In",fadeUI);
+                weaponUIAnim.SetBool("Fade Out",!fadeUI);
+            }
+            else
+            {
+                weaponUI.transform.Find("Ammo Icon").Find("Type").GetComponent<Text>().text = currentWeapon.localAmmoSource.ToArray()[currentWeapon.currentAmmoIndex].ammoName;
+            }
+
+        }
+        else
+        {
+            weaponUI.SetActive(false);
+        }
+        fadeUI = false;
     }
 
     void EquipWeapon(int weaponIndex)
     {
-        if(avaliableWeapons[weaponIndex] != currentWeapon)
+        if(weapons[weaponIndex] != currentWeapon)
         {
             currentWeaponIndex = weaponIndex;
 
-            if(currentWeapon != null)
+            if(isWeaponEquipped())
             {
                 currentWeapon.UnselectWeapon();
                 Destroy(currentWeapon.gameObject);
             }
 
-            GameObject weaponGameObject = Instantiate(avaliableWeapons[weaponIndex]);
+            GameObject weaponGameObject = Instantiate(weapons[weaponIndex]);
             Weapon newWeapon = weaponGameObject.GetComponent<Weapon>();
             
             weaponGameObject.name = weaponGameObject.name.Substring(0,weaponGameObject.name.Length - "(Clone)".Length);
@@ -127,19 +175,22 @@ public class PlayerCombat : DamageableObject
     public void AddToAvaliableWeapons(GameObject added){
 
         print(added.name);
-        GameObject prefab = possibleWeapons.Where(obj => obj.name == added.name).SingleOrDefault();
+        GameObject prefab = armouryObject.armoury.Where(obj => obj.name == added.name).SingleOrDefault().gameObject;
         prefab.GetComponent<Weapon>().playerCombat = this;
-        avaliableWeapons.Add(prefab);
-        if(avaliableWeapons.Count == 1) EquipWeapon(0);
+        weapons.Add(prefab);
+        if(weapons.Count == 1) EquipWeapon(0);
+        fadeUI = true;
     }
 
     public void AddTypeToAmmoCap(Ammo ammoType)
     {
-        ammoCap.Add(ammoType);
+        armouryObject.ammoBag.Add(ammoType);
     }
     
     public void IncreaseAmmoCount(int ammoIndex, int increaseCount){
-        ammoCap.ToArray()[ammoIndex].count += increaseCount;
+        armouryObject.ammoBag.ToArray()[ammoIndex].count += increaseCount;
+        fadeUI = true;
+        
     }
 
     void EquipNeighbourWeapon(int direction)
@@ -148,14 +199,15 @@ public class PlayerCombat : DamageableObject
 
         if(newIndex < 0)
         {
-            newIndex = avaliableWeapons.Count -1;
+            newIndex = weapons.Count -1;
         }
-        else if(newIndex > avaliableWeapons.Count - 1)
+        else if(newIndex > weapons.Count - 1)
         {
             newIndex = 0;
         }
 
         EquipWeapon(newIndex);
+        fadeUI = true;
     }
 
     Vector3 AimDirection()
@@ -178,6 +230,19 @@ public class PlayerCombat : DamageableObject
 
         return targetPos;
     }
+
+    public Weapon GetCurrentWeapon()
+    {
+        if(isWeaponEquipped())
+            return currentWeapon;
+        else return null;
+    }
+
+    public bool isWeaponEquipped(){
+        if(currentWeapon != null)  return true;
+        else return false;
+    }
+
 
     bool isCrossHairHostile()
     {

@@ -28,8 +28,15 @@ public abstract class Weapon : Interactable
 
     public AudioClip firingSound;
 
+    public int[] avaliableAmmoTypes;
+
+    [HideInInspector]
+    public List<Ammo> localAmmoSource = new List<Ammo>();
+
     [HideInInspector]
     public PlayerCombat playerCombat;
+
+    public Sprite weaponIcon;
 
     void Update(){
         if(isSelected()){
@@ -40,7 +47,7 @@ public abstract class Weapon : Interactable
     //Fire the weapon
     public void Fire()
     {
-        if(canFire && GetAmmoCount() > 0)
+        if(canFire && GetAmmoCount() > 0 && localAmmoSource.Count > 0)
         {            
             //Instantiate a new projectile and store the projectile object
             Projectile projectileInstance = Instantiate(GetAmmoProjectile()).GetComponent<Projectile>();
@@ -68,6 +75,7 @@ public abstract class Weapon : Interactable
     //Select the weapon
     public void SelectWeapon()
     {
+        CreateLocalAmmoSource();
         selected = true;
     }
     //Unselect the weapon
@@ -81,17 +89,31 @@ public abstract class Weapon : Interactable
         return selected;
     }
 
+    void CreateLocalAmmoSource()
+    {
+        foreach(Ammo ammoType in playerCombat.armouryObject.ammoBag){
+            int ammoGlobalIndex = playerCombat.armouryObject.ammoBag.IndexOf(ammoType);
+            
+            foreach(int ammoIndex in avaliableAmmoTypes)
+            {
+                if(ammoGlobalIndex == ammoIndex)
+                    localAmmoSource.Add(ammoType);
+            }
+            
+        }
+    }
+
     GameObject GetAmmoProjectile()
     {
-        return playerCombat.ammoCap[currentAmmoIndex].projectile;
+        return localAmmoSource[currentAmmoIndex].projectile;
     }
     void ChangeAmmoCount(int change)
     {
-        playerCombat.ammoCap.ToArray()[currentAmmoIndex].count += change;
+        playerCombat.armouryObject.ammoBag.ToArray()[currentAmmoIndex].count += change;
     }
     int GetAmmoCount()
     {
-        return playerCombat.ammoCap[currentAmmoIndex].count;
+        return playerCombat.armouryObject.ammoBag[currentAmmoIndex].count;
     }
 
     //Logic to control weapon fire rate

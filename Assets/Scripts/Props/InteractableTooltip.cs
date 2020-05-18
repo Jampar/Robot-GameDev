@@ -6,6 +6,7 @@ using UnityEngine;
 public class InteractableTooltip : ScriptableObject
 {
     public string Name;
+    [TextArea]
     public string Description;
     public Sprite Icon;
 }

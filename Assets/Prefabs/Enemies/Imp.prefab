@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Imp
-  damObType: 1
+  damObType: 2
   currentHealth: 30
   maxHealth: 30
   heathBarPrefab: {fileID: 7051190910238846357, guid: 87185a3a3800e464e8acf2f75a10c576, type: 3}
@@ -109,19 +109,19 @@ MonoBehaviour:
   damagedBy: {fileID: 0}
   viewDetectionAngle: 45
   viewDetectionRange: 25
-  audioDetectionRange: 30
+  audioDetectionRange: 40
   hostileBehaviour: 0
   idleBehaviour: 0
   idleSpeed: 6
   hostileSpeed: 6
   FoeComponents:
   - PlayerCombat
-  alertLevelRate: 0.5
+  alertLevelRate: 2
   idleLevelRate: 1
   searchAlertThreshold: 0.75
   alertLevelPrefab: {fileID: 6536617285031468072, guid: 97745d0e0899a2d4e9a7ccc6ce5b9cce, type: 3}
   stopBorder: 2
-  soundThreshold: 0.1
+  soundThreshold: 0.075
   searchTime: 5
   meleeReach: 2.5
   meleeDamage: 5

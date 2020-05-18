@@ -125,9 +125,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d27ac130d80238343bcc6b9914c4e45b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  identity: bullet
+  damageType: 1
   isExplosive: 1
   effectedByGravity: 1
   explosionParticle: {fileID: 3377188971235477259, guid: 7428b5048a1b1dd4da88917cf1930779, type: 3}
-  explosionRadius: 3
+  explosionRadius: 2
   explosionDamage: 5
+  damageOrigin: {fileID: 0}

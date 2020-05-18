@@ -139,6 +139,16 @@ public class PlayerController : MonoBehaviour
             moveDirection = CalculateMovementVector();
         }
 
+        if(isCrouched)
+        {
+            ChangeControllerDimensions(new Vector3(0,2.5f,0),5);
+        }else
+        {
+            ChangeControllerDimensions(new Vector3(0,3,0),6);
+
+        }
+
+
         //Assign correct movement type for the input vector
         SetCorrectMovementType(moveDirection);
 
@@ -243,6 +253,11 @@ public class PlayerController : MonoBehaviour
 
     }
     
+
+    void ChangeControllerDimensions(Vector3 centre, float height){
+        GetComponent<CharacterController>().center = centre;
+        GetComponent<CharacterController>().height = height;
+    }
     
     float MatchSpeedForMovementType(){
 
