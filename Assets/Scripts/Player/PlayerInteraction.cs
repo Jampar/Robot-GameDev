@@ -8,7 +8,8 @@ public class PlayerInteraction : MonoBehaviour
 
     float interactionRange = 5.0f;
     GameObject lastViewed;
-    
+    RaycastHit hit;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,21 +24,26 @@ public class PlayerInteraction : MonoBehaviour
         if(viewed != null)
         {   
             Weapon currentWeapon = null;
+
             if(GetComponent<PlayerCombat>().isWeaponEquipped())
                 currentWeapon = GetComponent<PlayerCombat>().GetCurrentWeapon();
 
-            if(Vector3.Distance(transform.position,viewed.transform.position) < interactionRange){         
+
+            if(Vector3.Distance(transform.position,hit.point) < interactionRange)
+            {         
                 if(viewed.GetComponent<Interactable>())
                 {
                     Interactable interactable = viewed.GetComponent<Interactable>();
-                    if(interactable != currentWeapon){
+
+                    if(interactable != currentWeapon)
+                    {
                         interactable.CreateTooltip();
+                        if(interactable.outline)
+                            OutlineGameObject(viewed);
 
-                        if(!viewed.GetComponent<Outline>())
-                            viewed.AddComponent<Outline>();
-
-                        if(Input.GetButtonDown("Interact")){
-                            InteractCorrectly(interactable);
+                        if(Input.GetButtonDown("Interact"))
+                        {
+                            interactable.PerformInteraction();
                             interactable.DestroyToolTip();
                         }
                     }
@@ -45,52 +51,29 @@ public class PlayerInteraction : MonoBehaviour
             }
             else
             {
-                if(viewed.GetComponent<Outline>()) Destroy(viewed.GetComponent<Outline>());
-                if(viewed.GetComponent<Interactable>()) viewed.GetComponent<Interactable>().DestroyToolTip();
+                StopInteractingWithGameObject(viewed);
             }
         }
-
         if(lastViewed != null && viewed != lastViewed)
         {
-            if(lastViewed.GetComponent<Outline>()) Destroy(lastViewed.GetComponent<Outline>());
-            if(lastViewed.GetComponent<Interactable>()) lastViewed.GetComponent<Interactable>().DestroyToolTip();
+            StopInteractingWithGameObject(lastViewed);
         } 
 
         lastViewed = viewed;
     }
 
-    void InteractCorrectly(Interactable interactable)
-    {
-        PlayerCombat playerCombat = GetComponent<PlayerCombat>();
-      
-        if(interactable.GetComponent<Weapon>())
-        {
-            playerCombat.AddToAvaliableWeapons(interactable.gameObject);
-            Destroy(interactable.gameObject);
-        }
-
-        if(interactable.GetComponent<LootSource>())
-        {
-            LootSource interactableLootSource = interactable.GetComponent<LootSource>();
-
-            switch (interactableLootSource.type)
-            {
-                case LootSource.LootType.Ammo:
-
-                    playerCombat.IncreaseAmmoCount(interactableLootSource.ammoIndex,interactableLootSource.lootCount);
-                    interactable.tag = "Untagged";
-                    Destroy(interactable.GetComponent<Outline>());
-                    interactable.GetComponent<Renderer>().materials[1].DisableKeyword("_EMISSION");
-                    Destroy(interactable);
-                    break;
-            }
-        }
+    void OutlineGameObject(GameObject outlineGameObject){
+        if(!outlineGameObject.GetComponent<Outline>())
+            outlineGameObject.AddComponent<Outline>();
     }
 
+    void StopInteractingWithGameObject(GameObject stopInteraction){
+        if(stopInteraction.GetComponent<Outline>()) Destroy(stopInteraction.GetComponent<Outline>());
+        if(stopInteraction.GetComponent<Interactable>()) stopInteraction.GetComponent<Interactable>().DestroyToolTip();
+    }
 
     GameObject CurrentViewedObject()
     {
-        RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
 
         if(Physics.Raycast(ray,out hit))

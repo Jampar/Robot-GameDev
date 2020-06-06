@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2660831466889245198}
   - component: {fileID: 8791205149274685219}
   - component: {fileID: 1150265640}
+  - component: {fileID: 3801810821925869505}
   m_Layer: 0
   m_Name: VineBlocker
   m_TagString: Interactable
@@ -30,9 +31,10 @@ Transform:
   m_GameObject: {fileID: 378290583437482209}
   m_LocalRotation: {x: -0.13494164, y: 0.33032507, z: 0.5477499, w: -0.75673395}
   m_LocalPosition: {x: 0.7599983, y: -1.1799998, z: -15.290001}
-  m_LocalScale: {x: 869.96643, y: 869.9667, z: 869.96674}
+  m_LocalScale: {x: 531.5582, y: 531.55835, z: 531.5584}
   m_Children:
   - {fileID: 8816557884061902706}
+  - {fileID: 3534994853491164264}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: -9.07, y: -40.993, z: 291.6}
@@ -118,6 +120,7 @@ MonoBehaviour:
   heathBarPrefab: {fileID: 7051190910238846357, guid: 87185a3a3800e464e8acf2f75a10c576, type: 3}
   healthBarPoint: {fileID: 8816557884061902706}
   healthBarInstance: {fileID: 0}
+  damagedBy: {fileID: 0}
   dissolveSpeed: 1
 --- !u!114 &1150265640
 MonoBehaviour:
@@ -132,8 +135,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tooltip: {fileID: 11400000, guid: c2eef5ea26e468e4585166badebb5381, type: 2}
-  tooltipGameobject: {fileID: 1715236166469948067, guid: 99630414df410714c9ace22c7b04ad75, type: 3}
-  tooltipPoint: {fileID: 8816557884061902706}
+  tooltipGameobject: {fileID: 2171015200849116131, guid: 5cce3f8bc7223d74da7f678fb46d079b, type: 3}
+  tooltipPoint: {fileID: 3534994853491164264}
+  createTooltip: 1
+  outline: 0
+--- !u!208 &3801810821925869505
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 378290583437482209}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.006, y: 0.005, z: 0.00001}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.001, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &817804909514126172
 GameObject:
   m_ObjectHideFlags: 0
@@ -158,9 +179,39 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 817804909514126172}
   m_LocalRotation: {x: 0, y: 0.21887559, z: 0, w: 0.97575283}
-  m_LocalPosition: {x: -0.002256, y: 0.000672, z: 0.001603}
+  m_LocalPosition: {x: 0.00187, y: -0.00258, z: 0.00283}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 3703274531976932082}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 25.286, z: 0}
+--- !u!1 &3896914144650799878
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3534994853491164264}
+  m_Layer: 0
+  m_Name: ToolTip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3534994853491164264
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3896914144650799878}
+  m_LocalRotation: {x: 0, y: 0.21887559, z: 0, w: 0.97575283}
+  m_LocalPosition: {x: 0.00229, y: 0.00427, z: 0.00372}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 3703274531976932082}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 25.286, z: 0}

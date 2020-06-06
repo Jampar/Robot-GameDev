@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1212919899183012164}
   - component: {fileID: 1894996478864513587}
   - component: {fileID: -2380026298917926110}
+  - component: {fileID: 1997101182214199820}
   m_Layer: 0
   m_Name: Rifle
   m_TagString: Untagged
@@ -106,6 +107,8 @@ MonoBehaviour:
   tooltip: {fileID: 11400000, guid: 623e5e3be4d77dd469a356d5681595cc, type: 2}
   tooltipGameobject: {fileID: 1715236166469948067, guid: 99630414df410714c9ace22c7b04ad75, type: 3}
   tooltipPoint: {fileID: 7259601027970250617}
+  createTooltip: 1
+  outline: 1
   weaponFireRate: 0.2
   currentAmmoIndex: 0
   semiAutomatic: 0
@@ -212,6 +215,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!65 &1997101182214199820
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 642323922886094232}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.3853672, y: 0.14147317, z: 0.5377785}
+  m_Center: {x: -0.15520331, y: -0.0065435776, z: 0.1574522}
 --- !u!1 &2364498597429115346
 GameObject:
   m_ObjectHideFlags: 0
@@ -236,7 +252,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2364498597429115346}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.912, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4517858010571906955}

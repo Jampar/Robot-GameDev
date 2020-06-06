@@ -5,16 +5,17 @@ using UnityEngine;
 public static class DamageMatrix
 {
     static float[,] damageMatrix = new float[,] {
-                                                {0.0f,20.0f},
-                                                {0.0f,10.0f},
-                                                {5.0f,20.0f},
-                                                {5.0f,15.0f}
+                                                {0.0f,20.0f,0.0f},
+                                                {0.0f,10.0f,0.0f},
+                                                {5.0f,20.0f,0.0f},
+                                                {0.0f,0.0f,0.0f}
                                                 };
 
     public enum DamageTypes
     {
         Impact,
-        Explosive
+        Explosive,
+        Stasis
     };
 
     public enum DamObTypes
@@ -22,7 +23,8 @@ public static class DamageMatrix
         Vegetation,
         Rock,
         Imp,
-        Player
+        Player,
+        Mechanism
     };
 
     public static float GetDamage(DamObTypes objectType, DamageTypes damageType)

@@ -15,6 +15,8 @@ public abstract class Weapon : Interactable
 
     public int currentAmmoIndex;
 
+    public float recoilAmount;
+
     public bool semiAutomatic;
     //The weapon can be fired
     bool canFire = true;
@@ -27,6 +29,7 @@ public abstract class Weapon : Interactable
     public float projectileVelocity;
 
     public AudioClip firingSound;
+    public GameObject fireParticle;
 
     public int[] avaliableAmmoTypes;
 
@@ -44,6 +47,12 @@ public abstract class Weapon : Interactable
         }
     }
 
+    public override void PerformInteraction()
+    {
+        GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCombat>().AddToAvaliableWeapons(gameObject);
+        Destroy(gameObject);
+    }
+
     //Fire the weapon
     public void Fire()
     {
@@ -58,7 +67,9 @@ public abstract class Weapon : Interactable
             projectileInstance.LaunchProjectile(projectileVelocity);
 
             projectileInstance.damageOrigin = playerCombat.gameObject;
-
+            
+            playerCombat.WeaponRecoil();
+            
             if(firingSound != null)
             {
                 GetComponent<AudioSource>().clip = firingSound;
@@ -91,6 +102,8 @@ public abstract class Weapon : Interactable
 
     void CreateLocalAmmoSource()
     {
+        if(playerCombat == null) playerCombat = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCombat>();
+        
         foreach(Ammo ammoType in playerCombat.armouryObject.ammoBag){
             int ammoGlobalIndex = playerCombat.armouryObject.ammoBag.IndexOf(ammoType);
             

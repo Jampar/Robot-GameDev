@@ -18,10 +18,10 @@ MonoBehaviour:
   - {fileID: 7542215834380349841, guid: d8931cf7f44b5754c9feef7b57224148, type: 3}
   ammoBag:
   - ammoName: Standard
-    projectile: {fileID: 1791314284641421070, guid: 4ae95731b53d36c4db4d9821c29625bc, type: 3}
-    count: 30
+    projectile: {fileID: 7227277212911476321, guid: 66e0be4e3b256864b84a44778c1096fc, type: 3}
+    count: 482
     ammoIcon: {fileID: 21300000, guid: c97693fc565c53547a353e7e959b5c1c, type: 3}
-  - ammoName: Explosive
-    projectile: {fileID: 1791314284641421070, guid: c0099779397c40446b6c3e559300c657, type: 3}
-    count: 0
+  - ammoName: Stasis
+    projectile: {fileID: 7227277212911476321, guid: 2a1ac412fbb9d5245b73316ae4dcf86f, type: 3}
+    count: 500
     ammoIcon: {fileID: 21300000, guid: a299e48f703e7d04192b076d7b4b0363, type: 3}

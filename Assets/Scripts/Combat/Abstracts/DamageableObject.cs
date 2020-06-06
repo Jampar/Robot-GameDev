@@ -41,12 +41,15 @@ public class DamageableObject : MonoBehaviour
     }
 
     public void DealDamage(float damage,GameObject origin)
-    {
+    {        
+        Debug.Log(origin.name + " damaged: " + name + " for: "+ damage);
+
         damagedBy = origin;
         currentHealth -= damage;
         if(!healthBarCreated) CreateHealthBar();
         UpdateHealthBar();
         if(currentHealth <= 0) Die();
+
     }
 
     public float GetHealth(){

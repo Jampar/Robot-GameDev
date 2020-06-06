@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-
+using Cinemachine;
+using System;
 
 [System.Serializable]
 public class Ammo
@@ -17,15 +18,15 @@ public class Ammo
 public class PlayerCombat : DamageableObject
 {
     public bool aiming;
-    
-    Animator animator;
+    [HideInInspector]
+    public Animator animator;
     Weapon currentWeapon;
     PlayerController playerController;
 
     public Transform weaponParent;
 
     public ArmouryObject armouryObject;
-    List<GameObject> weapons = new List<GameObject>();
+    public List<GameObject> weapons = new List<GameObject>();
 
     int currentWeaponIndex = 0;
 
@@ -33,21 +34,51 @@ public class PlayerCombat : DamageableObject
 
     public Image crossHair;
     public GameObject weaponUI;
+    public GameObject recoilUI;
     Animator weaponUIAnim;
 
     bool fadeUI = false;
 
-    // Start is called before the first frame update
-    void Start()
+    public bool giveAllWeapons;
+    public bool wipeAmmoStocks;
+
+    static GameObject _playerInstance;
+
+    float recoilSpread;
+    public float maxRecoil;
+    bool recoilFull;
+    
+    void Awake()
     {
+         //if we don't have an [_instance] set yet
+        if(!_playerInstance)
+            _playerInstance = this.gameObject;
+         //otherwise, if we do, kill this thing
+        else
+            Destroy(this.gameObject);
+ 
+        DontDestroyOnLoad(this.gameObject);
+
         animator = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
         weaponUIAnim = weaponUI.GetComponent<Animator>();
 
+        GameObject.Find("Fade").GetComponent<Animator>().SetTrigger("Fade In");
+
+        if (giveAllWeapons){
+            GiveAllWeapons();
+        }
+
+        crossHair = GameObject.Find("Crosshair").GetComponent<Image>();
         if(weapons.Count > 0)
             EquipWeapon(0);
-
-         WipeAmmoStocks();
+     }
+     
+    // Start is called before the first frame update
+    void Start()
+    {
+        if(wipeAmmoStocks)
+            WipeAmmoStocks();
     }
 
     void WipeAmmoStocks(){
@@ -66,16 +97,7 @@ public class PlayerCombat : DamageableObject
 
             if(ammoSelection)
             {
-                if(Input.GetButtonDown("ReloadCycleRight")){
-                    weaponUIAnim.SetTrigger("Clicked E");
-                    currentWeapon.currentAmmoIndex += 1;
-                    if(currentWeapon.currentAmmoIndex >= currentWeapon.localAmmoSource.Count) currentWeapon.currentAmmoIndex = 0;
-                }
-                if(Input.GetButtonDown("ReloadCycleLeft")){
-                    weaponUIAnim.SetTrigger("Clicked Q");
-                    currentWeapon.currentAmmoIndex -= 1;
-                    if(currentWeapon.currentAmmoIndex < 0) currentWeapon.currentAmmoIndex = currentWeapon.localAmmoSource.Count - 1;
-                }
+                CycleAmmoType();
             }
 
            
@@ -86,13 +108,31 @@ public class PlayerCombat : DamageableObject
             if(aiming)
             {
                 fadeUI = true;
-                if(Input.GetButton("Fire1") && !playerController.isSprinting() && !ammoSelection) {
-                    currentWeapon.Fire();
-                }  
+                if (recoilSpread < maxRecoil && !recoilFull)
+                {
+                    if (Input.GetButton("Fire1") && !playerController.isSprinting() && !ammoSelection)
+                    {
+                        currentWeapon.Fire();
+                    }
+                }
+                else
+                {
+                    if (recoilSpread <= 0)
+                    {
+                        recoilSpread = 0;
+                        recoilFull = false;
+                    }
+                    else
+                        recoilFull = true;
+                }
 
                 if(isCrossHairHostile())
                 {
                     crossHair.color = Color.red;
+                }
+                else if (isCrossHairIntrigue())
+                {
+                    crossHair.color = Color.yellow;
                 }
                 else
                 {
@@ -116,6 +156,15 @@ public class PlayerCombat : DamageableObject
         }
 
         UpdateWeaponUI();
+
+        if(recoilSpread > 0)
+            recoilSpread -= Time.deltaTime;
+    }
+
+    public void WeaponRecoil()
+    {
+        animator.SetTrigger("Shoot");
+        recoilSpread += currentWeapon.recoilAmount;
     }
 
     void UpdateWeaponUI()
@@ -143,6 +192,41 @@ public class PlayerCombat : DamageableObject
             weaponUI.SetActive(false);
         }
         fadeUI = false;
+        recoilUI.GetComponent<RectTransform>().localScale = Vector3.Lerp(recoilUI.GetComponent<RectTransform>().localScale,
+                                                                        Vector3.one * recoilSpread,
+                                                                        Time.deltaTime * 5);
+        if (recoilFull)
+        {
+            for (int i = 0; i < recoilUI.transform.childCount; i++)
+            {
+                recoilUI.transform.GetChild(i).GetComponent<Image>().color = Color.red;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < recoilUI.transform.childCount; i++)
+            {
+                recoilUI.transform.GetChild(i).GetComponent<Image>().color = Color.white;
+            }
+        }
+
+    }
+
+    void CycleAmmoType(){
+
+        if(Input.GetButtonDown("ReloadCycleRight"))
+        {
+            weaponUIAnim.SetTrigger("Clicked E");
+            currentWeapon.currentAmmoIndex += 1;
+            if(currentWeapon.currentAmmoIndex >= currentWeapon.localAmmoSource.Count) currentWeapon.currentAmmoIndex = 0;
+        }
+        if(Input.GetButtonDown("ReloadCycleLeft"))
+        {
+            weaponUIAnim.SetTrigger("Clicked Q");
+            currentWeapon.currentAmmoIndex -= 1;
+            if(currentWeapon.currentAmmoIndex < 0) currentWeapon.currentAmmoIndex = currentWeapon.localAmmoSource.Count - 1;
+        }
+
     }
 
     void EquipWeapon(int weaponIndex)
@@ -215,7 +299,7 @@ public class PlayerCombat : DamageableObject
         Vector3 targetPos = Vector3.zero;
         RaycastHit hit;
 
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2 + 80 * UnityEngine.Random.Range(-recoilSpread, recoilSpread), Screen.height / 2 + 80 * UnityEngine.Random.Range(-recoilSpread, recoilSpread), 0));
 
         if(Physics.Raycast(ray, out hit))
         {
@@ -243,6 +327,12 @@ public class PlayerCombat : DamageableObject
         else return false;
     }
 
+    void GiveAllWeapons(){
+        foreach(Weapon weapon in armouryObject.armoury){
+            AddToAvaliableWeapons(weapon.gameObject);
+        }
+    }
+
 
     bool isCrossHairHostile()
     {
@@ -252,6 +342,19 @@ public class PlayerCombat : DamageableObject
         if(Physics.Raycast(ray, out hit))
         {
             if(hit.transform.GetComponent<DamageableObject>())  return true;
+        }
+        return false;
+
+    }
+
+    bool isCrossHairIntrigue()
+    {
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (hit.transform.tag == "Interactable") return true;
         }
         return false;
 

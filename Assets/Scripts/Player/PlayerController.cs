@@ -42,6 +42,7 @@ public class PlayerController : MonoBehaviour
     float groundStepLimit = 0.1f;
 
     RaycastHit hit;
+    public string[] movePointRaycastLayerMasks;
 	#endregion
 
     #region Global Component Variables
@@ -141,7 +142,7 @@ public class PlayerController : MonoBehaviour
 
         if(isCrouched)
         {
-            ChangeControllerDimensions(new Vector3(0,2.5f,0),5);
+            ChangeControllerDimensions(new Vector3(0,2f,0),4);
         }else
         {
             ChangeControllerDimensions(new Vector3(0,3,0),6);
@@ -166,10 +167,10 @@ public class PlayerController : MonoBehaviour
     float CameraLookAngle(){
         RaycastHit hit;
         Vector3 target = transform.forward;
-
+        int layer_mask = LayerMask.GetMask(movePointRaycastLayerMasks);
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
 
-        if(Physics.Raycast(ray, out hit))
+        if(Physics.Raycast(ray, out hit, layer_mask))
         {
             target = new Vector3(hit.point.x,transform.position.y,hit.point.z) - transform.position;
         }

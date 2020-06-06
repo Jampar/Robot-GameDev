@@ -1,5 +1,35 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &356269818
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 356269819}
+  m_Layer: 0
+  m_Name: TooltipPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &356269819
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 356269818}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.5, y: -0.001, z: 1.201}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 3301668052475091593}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1704785558166262561
 GameObject:
   m_ObjectHideFlags: 0
@@ -64,6 +94,7 @@ Transform:
   m_Children:
   - {fileID: 1018874633992863170}
   - {fileID: 15261650738206477}
+  - {fileID: 356269819}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: -89.881, y: -34.878, z: 34.768}
@@ -133,13 +164,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88676f54f9354e44cb7b2ad0c60fb7e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tooltip: {fileID: 11400000, guid: 27baa92c851fdfd47a71c18ecddf4eb7, type: 2}
+  tooltipGameobject: {fileID: 1715236166469948067, guid: 99630414df410714c9ace22c7b04ad75, type: 3}
+  tooltipPoint: {fileID: 356269819}
+  createTooltip: 1
+  outline: 1
   weaponFireRate: 0.5
   currentAmmoIndex: 0
   semiAutomatic: 1
   projectileFirePoint: {fileID: 15261650738206477}
   projectileVelocity: 20
   firingSound: {fileID: 8300000, guid: 128897248a697384893d63168b9b394d, type: 3}
+  avaliableAmmoTypes: 0000000001000000
+  localAmmoSource: []
   playerCombat: {fileID: 0}
+  weaponIcon: {fileID: 0}
 --- !u!82 &-4398404931832913431
 AudioSource:
   m_ObjectHideFlags: 0
