@@ -9,22 +9,21 @@ public class LootSource : Interactable
     public enum LootType {Ammo, Health}
     public LootType type;
 
-    public int ammoIndex;
+    public RangedWeapon.AmmoType ammoType;
 
     public int lootCount;
 
     public override void PerformInteraction(){
-        LootSource interactableLootSource = GetComponent<LootSource>();
         GetComponent<AudioSource>().Play();
-            switch (interactableLootSource.type)
+            switch (type)
             {
                 case LootSource.LootType.Ammo:
 
-                    GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCombat>().IncreaseAmmoCount(interactableLootSource.ammoIndex,interactableLootSource.lootCount);
+                    GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCombat>().IncreaseAmmoCount(ammoType, lootCount);
                     tag = "Untagged";
                     Destroy(GetComponent<Outline>());
                     GetComponent<Renderer>().materials[1].DisableKeyword("_EMISSION");
-                    Destroy(interactableLootSource);
+                    Destroy(gameObject);
                     break;
             }
     }

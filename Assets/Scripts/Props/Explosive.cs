@@ -26,7 +26,7 @@ public class Explosive : DamageableObject
         Collider[] colls = Physics.OverlapSphere(transform.position,explosion_radius);
         foreach(Collider coll in colls)
         {
-            if(coll.GetComponent<DamageableObject>() && coll.gameObject != damagedBy && coll.gameObject != gameObject)
+            if(coll.GetComponent<DamageableObject>() && coll.gameObject != lastDamagedBy && coll.gameObject != gameObject)
             {
                 DamageableObject damageableObject = coll.GetComponent<DamageableObject>();
                 float damage = DamageMatrix.GetDamage(damObType,DamageMatrix.DamageTypes.Explosive);

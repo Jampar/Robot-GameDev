@@ -11,7 +11,7 @@ public class Imp : Enemy
         else if(!isSearching()) DecreaseAlertLevel();
         else if(isDamaged()) {
             SetAlertLevel(1);
-             SetFoe(damagedBy);
+             SetFoe(lastDamagedBy);
         }
 
         if(GetAlertLevel() == 1) PerformHostileBehaviour();

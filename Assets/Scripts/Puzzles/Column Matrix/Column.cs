@@ -34,6 +34,8 @@ public class Column : MonoBehaviour
 
     public bool inPlace;
     bool movingToGoal;
+
+    bool setEffect = true;
     
     // Start is called before the first frame update
     void Start()
@@ -41,10 +43,11 @@ public class Column : MonoBehaviour
         movementVector = movementVectors[movementIndex];
         speed = normalSpeed;
         anim = GetComponent<Animator>();
+        puzzle = transform.parent.parent.GetComponent<ColumnMatrixPuzzle>();
     }
 
     // Update is called once per frame
-    void LateUpdate()
+    void Update()
     {
         Move();
     } 
@@ -55,41 +58,39 @@ public class Column : MonoBehaviour
         if(isInlineWithPoint())
         {
             //If has been instructed to change direction
-            if(changeDirection)
-            {
-                //Change movment axis
-                ChangeMovementDirection();
-            }
-
+            if(changeDirection) ChangeMovementDirection();
+            
             //Calculate new destination
-            SetMovementPoint(transform.position + (movementVector * puzzle.floorSpacing));
+            SetMovementPoint(GetNextMovementVector());
 
             //If point is out of bounds
             if(!puzzle.inBounds(nextPoint) && !puzzle.IsSharedDestination(nextPoint))
             {
-                //Reverse movement direction
-                movementVector *= -1;
-                //Recalculate new destination
-                SetMovementPoint(transform.position + movementVector * puzzle.floorSpacing);
+                ReverseMovmentDirection();
             }
 
             //If has been instructed to stop
             if(stopAtNextPoint)
             {
-                if(isPointGoal(transform.position))
+                if (isPointGoal(transform.position))
                 {
                     FloorPoint point = puzzle.GetPoint(transform.position);
+                    
                     point.hasColumnOn = true;
 
                     SetMovementPoint(transform.position - puzzle.columnOffset);
                     movingToGoal = true;
+                    
                 }
                 else
                 {
                     RunFreezeTimer();
                 }
-            } 
+            }
         }
+
+        anim.SetBool("Effect", stopAtNextPoint);
+       
 
         if(CanGoForward() || movingToGoal)
         {
@@ -98,7 +99,10 @@ public class Column : MonoBehaviour
         }
     }
     
-    
+    Vector3 GetNextMovementVector()
+    {
+        return transform.position + (movementVector * puzzle.floorSpacing);
+    }
 
     void RunFreezeTimer()
     {
@@ -124,14 +128,21 @@ public class Column : MonoBehaviour
     }
 
     bool isInlineWithPoint(){
-        foreach(FloorPoint point in puzzle.floorPoints)
+        try
         {
-            if(Vector3.Equals(point.point, transform.position - new Vector3(0,12,0)))
+            foreach (FloorPoint point in puzzle.floorPoints)
             {
-                point.hasColumnOn = true;
-                return true;
+                if (Vector3.Equals(point.point, transform.position - new Vector3(0, 12, 0)))
+                {
+                    point.hasColumnOn = true;
+                    return true;
+                }
+                point.hasColumnOn = false;
             }
-            point.hasColumnOn = false;
+        }
+        catch(System.Exception e)
+        {
+            return false;
         }
         return false;
     }
@@ -152,6 +163,14 @@ public class Column : MonoBehaviour
     {
         previousPoint = nextPoint;
         nextPoint = newPoint;
+    }
+
+    void ReverseMovmentDirection()
+    {
+        //Reverse movement direction
+        movementVector *= -1;
+        //Recalculate new destination
+        SetMovementPoint(GetNextMovementVector());
     }
 
     void ChangeMovementDirection(){

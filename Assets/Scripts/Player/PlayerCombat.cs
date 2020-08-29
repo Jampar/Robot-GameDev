@@ -5,42 +5,73 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cinemachine;
 using System;
-
-[System.Serializable]
-public class Ammo
-{
-    public string ammoName;
-    public GameObject projectile;
-    public int count;
-    public Sprite ammoIcon;
-}
+using System.Text.RegularExpressions;
 
 public class PlayerCombat : DamageableObject
 {
-    public bool aiming;
+    bool aiming;
+
+    #region Accessed Components
+
     [HideInInspector]
     public Animator animator;
     Weapon currentWeapon;
     PlayerController playerController;
+    CinemachineFreeLook freeLookCamera;
 
-    public Transform weaponParent;
+    #endregion
 
-    public ArmouryObject armouryObject;
-    public List<GameObject> weapons = new List<GameObject>();
 
-    int currentWeaponIndex = 0;
+    #region Weapons
 
-    public bool ammoSelection;
+    [Header("Weapons Equipped")]
 
-    public Image crossHair;
+    public static GameObject meleeWeapon;
+    public static GameObject primaryWeapon;
+    public static GameObject secondaryWeapon;
+
+    public enum WeaponSlot { Primary, Secondary, Melee, None };
+    static WeaponSlot selectedSlot;
+    public static int[] ammoCount;
+
+    #endregion
+
+
+    #region Weapon Hold Transforms
+
+    [Header("Transforms for Weapons")]
+
+    public Transform weaponHoldTransform;
+    public Transform meleeWeaponStoreTransform;
+    public Transform primaryWeaponStoreTransform;
+    public Transform secondaryWeaponStoreTransform;
+
+    #endregion
+
+
+    #region Weapon UI
+
+    [Header("Combat UI")]
+
+    public GameObject crossHair;
     public GameObject weaponUI;
     public GameObject recoilUI;
     Animator weaponUIAnim;
 
-    bool fadeUI = false;
+    #endregion
 
-    public bool giveAllWeapons;
-    public bool wipeAmmoStocks;
+    #region Zoom Variables
+
+    [Header("Zoom Variables")]
+
+    float cameraOriginalPOV;
+    public float zoomPOV = 40;
+    float targetPOV;
+    public float zoomTime = 2;
+
+    #endregion
+
+    bool fadeUI = false;
 
     static GameObject _playerInstance;
 
@@ -48,9 +79,19 @@ public class PlayerCombat : DamageableObject
     public float maxRecoil;
     bool recoilFull;
     
+    void Start()
+    {
+        //Find length of ammo type enum
+        int ammoEnumLength = Enum.GetNames(typeof(RangedWeapon.AmmoType)).Length;
+        //Create int array of that length
+        ammoCount = new int[ammoEnumLength];
+    }
+
     void Awake()
     {
-         //if we don't have an [_instance] set yet
+        // Preserve Player Data between scenes: *************
+
+        //if we don't have an [_instance] set yet
         if(!_playerInstance)
             _playerInstance = this.gameObject;
          //otherwise, if we do, kill this thing
@@ -59,306 +100,257 @@ public class PlayerCombat : DamageableObject
  
         DontDestroyOnLoad(this.gameObject);
 
+        //***************************************************
+
+
+        //Store Component data to access: *******************
+
         animator = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
-        weaponUIAnim = weaponUI.GetComponent<Animator>();
 
-        GameObject.Find("Fade").GetComponent<Animator>().SetTrigger("Fade In");
+        freeLookCamera = Camera.main.transform.GetChild(0).GetComponent<CinemachineFreeLook>();
+        cameraOriginalPOV = freeLookCamera.m_Lens.FieldOfView;
 
-        if (giveAllWeapons){
-            GiveAllWeapons();
-        }
-
-        crossHair = GameObject.Find("Crosshair").GetComponent<Image>();
-        if(weapons.Count > 0)
-            EquipWeapon(0);
-     }
+        //***************************************************        
+    }
      
-    // Start is called before the first frame update
-    void Start()
-    {
-        if(wipeAmmoStocks)
-            WipeAmmoStocks();
-    }
-
-    void WipeAmmoStocks(){
-        foreach(Ammo ammo in armouryObject.ammoBag){
-            ammo.count = 0;
-        }
-    }
-
     // Update is called once per frame
     void Update()
     {
-        if(weapons.Count > 0)
+        //Melee Handling ************************************
+        if (!isSlotEmpty(WeaponSlot.Melee) && !Input.GetButton("Fire2"))
+            MeleeHandling();
+
+        if(!isSlotEmpty(WeaponSlot.Primary) && !isSlotEmpty(WeaponSlot.Secondary))
         {
-            if(Input.GetButtonDown("Reload")) ammoSelection = !ammoSelection;
-            weaponUIAnim.SetBool("Select Ammo", ammoSelection);
-
-            if(ammoSelection)
-            {
-                CycleAmmoType();
-            }
-
-           
-            aiming = Input.GetButton("Fire2"); 
-            if(!ammoSelection)  
-                animator.SetBool("Aiming",aiming);
-
-            if(aiming)
-            {
-                fadeUI = true;
-                if (recoilSpread < maxRecoil && !recoilFull)
-                {
-                    if (Input.GetButton("Fire1") && !playerController.isSprinting() && !ammoSelection)
-                    {
-                        currentWeapon.Fire();
-                    }
-                }
-                else
-                {
-                    if (recoilSpread <= 0)
-                    {
-                        recoilSpread = 0;
-                        recoilFull = false;
-                    }
-                    else
-                        recoilFull = true;
-                }
-
-                if(isCrossHairHostile())
-                {
-                    crossHair.color = Color.red;
-                }
-                else if (isCrossHairIntrigue())
-                {
-                    crossHair.color = Color.yellow;
-                }
-                else
-                {
-                    crossHair.color = Color.gray;
-                }
-
-            }
-            else
-            {
-                crossHair.color = Color.gray;
-            }
-
-            if(!aiming){
-                Vector2 scrollDelta = Input.mouseScrollDelta;
-                if(scrollDelta.sqrMagnitude !=0){
-                    EquipNeighbourWeapon(Mathf.RoundToInt(scrollDelta.y));
-                }
-            }
-            
-            currentWeapon.projectileFirePoint.LookAt(AimDirection());
+            // Weapon Swap **************************************
+            if (Input.GetKeyDown(KeyCode.X)) ToggleSelectedWeapon();
         }
-
-        UpdateWeaponUI();
-
-        if(recoilSpread > 0)
-            recoilSpread -= Time.deltaTime;
+         
+        if(!isSlotEmpty(selectedSlot) && !isMeleeAnimationPlaying())
+            //Shooting Handling *********************************
+            ShootingHandling();
     }
 
-    public void WeaponRecoil()
+    void MeleeHandling()
     {
-        animator.SetTrigger("Shoot");
-        recoilSpread += currentWeapon.recoilAmount;
-    }
+        //Get when the melee button is down
+        bool meleeInput = Input.GetButton("Fire1");
 
-    void UpdateWeaponUI()
-    {
-        if(isWeaponEquipped())
+        if (PlayerController.movementType != PlayerController.MovementTypeLookup.Sprint)
         {
-            weaponUI.SetActive(true);
-            weaponUI.transform.Find("Count").GetComponent<Text>().text = currentWeapon.localAmmoSource.ToArray()[currentWeapon.currentAmmoIndex].count.ToString();
-            weaponUI.transform.Find("Ammo Icon").GetComponent<Image>().sprite = currentWeapon.localAmmoSource.ToArray()[currentWeapon.currentAmmoIndex].ammoIcon;
-            weaponUI.transform.Find("Weapon Icon").GetComponent<Image>().sprite = currentWeapon.weaponIcon;
-            
-
-            if(!ammoSelection){
-                weaponUIAnim.SetBool("Fade In",fadeUI);
-                weaponUIAnim.SetBool("Fade Out",!fadeUI);
-            }
-            else
-            {
-                weaponUI.transform.Find("Ammo Icon").Find("Type").GetComponent<Text>().text = currentWeapon.localAmmoSource.ToArray()[currentWeapon.currentAmmoIndex].ammoName;
-            }
-
+            //Set the animator state to do melee attack
+            animator.SetBool("Melee", meleeInput);
         }
         else
         {
-            weaponUI.SetActive(false);
+            //Set the animator state to do melee attack
+            animator.SetBool("Melee", false);
         }
-        fadeUI = false;
-        recoilUI.GetComponent<RectTransform>().localScale = Vector3.Lerp(recoilUI.GetComponent<RectTransform>().localScale,
-                                                                        Vector3.one * recoilSpread,
-                                                                        Time.deltaTime * 5);
-        if (recoilFull)
+
+        //If animator playing melee animation hold the sword in hand.
+        if (isMeleeAnimationPlaying())
         {
-            for (int i = 0; i < recoilUI.transform.childCount; i++)
+            SetWeaponTransform(WeaponSlot.Melee, weaponHoldTransform);
+        }
+        //Else store the melee weapon
+        else
+        {
+            SetWeaponTransform(WeaponSlot.Melee, meleeWeaponStoreTransform);
+        }
+    }
+    void ShootingHandling()
+    {
+        bool aimInput = Input.GetButton("Fire2");
+
+        //Set the animator state to aim
+        animator.SetBool("Aim", aimInput);
+        crossHair.GetComponent<Animator>().SetBool("Open", aimInput);
+
+        aiming = aimInput;
+
+        if (Input.GetButton("Fire2"))
+        {
+            ZoomInPOV();
+            SetWeaponTransform(selectedSlot, weaponHoldTransform);
+
+            switch (selectedSlot) 
             {
-                recoilUI.transform.GetChild(i).GetComponent<Image>().color = Color.red;
+                case (WeaponSlot.Secondary):
+                    animator.SetBool("Secondary Aim", true);
+                    break;
+            }
+
+            if (Input.GetButton("Fire1"))
+            {
+                GetWeaponGameobjectFromSlot(selectedSlot).GetComponent<RangedWeapon>().Fire();
             }
         }
         else
         {
-            for (int i = 0; i < recoilUI.transform.childCount; i++)
-            {
-                recoilUI.transform.GetChild(i).GetComponent<Image>().color = Color.white;
-            }
+            ZoomOutPOV();
+            SetWeaponTransform(selectedSlot, GetTransformFromSlot(selectedSlot));
+            animator.SetBool("Secondary Aim", false);
+
         }
 
     }
 
-    void CycleAmmoType(){
-
-        if(Input.GetButtonDown("ReloadCycleRight"))
-        {
-            weaponUIAnim.SetTrigger("Clicked E");
-            currentWeapon.currentAmmoIndex += 1;
-            if(currentWeapon.currentAmmoIndex >= currentWeapon.localAmmoSource.Count) currentWeapon.currentAmmoIndex = 0;
-        }
-        if(Input.GetButtonDown("ReloadCycleLeft"))
-        {
-            weaponUIAnim.SetTrigger("Clicked Q");
-            currentWeapon.currentAmmoIndex -= 1;
-            if(currentWeapon.currentAmmoIndex < 0) currentWeapon.currentAmmoIndex = currentWeapon.localAmmoSource.Count - 1;
-        }
-
-    }
-
-    void EquipWeapon(int weaponIndex)
+    void ZoomInPOV()
     {
-        if(weapons[weaponIndex] != currentWeapon)
+        if(targetPOV != zoomPOV)
+            targetPOV = zoomPOV;
+    }
+    void ZoomOutPOV()
+    {
+        if (targetPOV != cameraOriginalPOV)
+            targetPOV = cameraOriginalPOV;
+    }
+
+    void ToggleSelectedWeapon()
+    {
+        switch(selectedSlot)
         {
-            currentWeaponIndex = weaponIndex;
+            case WeaponSlot.Primary:
+                selectedSlot = WeaponSlot.Secondary;
+                break;
 
-            if(isWeaponEquipped())
-            {
-                currentWeapon.UnselectWeapon();
-                Destroy(currentWeapon.gameObject);
-            }
-
-            GameObject weaponGameObject = Instantiate(weapons[weaponIndex]);
-            Weapon newWeapon = weaponGameObject.GetComponent<Weapon>();
-            
-            weaponGameObject.name = weaponGameObject.name.Substring(0,weaponGameObject.name.Length - "(Clone)".Length);
-            weaponGameObject.transform.SetParent(weaponParent);
-            weaponGameObject.transform.localPosition = Vector3.zero;
-            weaponGameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
-
-            newWeapon.SelectWeapon();
-            currentWeapon = newWeapon;
-
-            Debug.Log(currentWeapon.name + " Equipped");
+            case WeaponSlot.Secondary:
+                selectedSlot = WeaponSlot.Primary;
+                break;
         }
     }
-
-    public void AddToAvaliableWeapons(GameObject added){
-
-        print(added.name);
-        GameObject prefab = armouryObject.armoury.Where(obj => obj.name == added.name).SingleOrDefault().gameObject;
-        prefab.GetComponent<Weapon>().playerCombat = this;
-        weapons.Add(prefab);
-        if(weapons.Count == 1) EquipWeapon(0);
-        fadeUI = true;
-    }
-
-    public void AddTypeToAmmoCap(Ammo ammoType)
+   
+    void SetWeaponTransform(WeaponSlot slot, Transform transformPoint)
     {
-        armouryObject.ammoBag.Add(ammoType);
-    }
-    
-    public void IncreaseAmmoCount(int ammoIndex, int increaseCount){
-        armouryObject.ammoBag.ToArray()[ammoIndex].count += increaseCount;
-        fadeUI = true;
+        //Get weapon gameobject
+        GameObject weapon = GetWeaponGameobjectFromSlot(slot);
+
+        //Remove any parent
+        weapon.transform.SetParent(null);
+        //Match position
+        weapon.transform.position = transformPoint.position;
+
+        //Match rotation
+        weapon.transform.rotation = transformPoint.rotation;
         
+        //Parent weapon to transformPoint
+        weapon.transform.SetParent(transformPoint);
     }
 
-    void EquipNeighbourWeapon(int direction)
+    public static void EquipWeapon(Weapon weapon)
     {
-        int newIndex = currentWeaponIndex + direction;
-
-        if(newIndex < 0)
+        switch (weapon.slot)
         {
-            newIndex = weapons.Count -1;
-        }
-        else if(newIndex > weapons.Count - 1)
-        {
-            newIndex = 0;
-        }
+            case WeaponSlot.Melee:
+                meleeWeapon = weapon.gameObject;
+                break;
 
-        EquipWeapon(newIndex);
-        fadeUI = true;
+            case WeaponSlot.Primary:
+                primaryWeapon = weapon.gameObject;
+                selectedSlot = weapon.slot;
+                break;
+
+            case WeaponSlot.Secondary:
+                secondaryWeapon = weapon.gameObject;
+                selectedSlot = weapon.slot;
+                break;
+        }
     }
 
-    Vector3 AimDirection()
+    bool isMeleeAnimationPlaying()
     {
-        Vector3 targetPos = Vector3.zero;
-        RaycastHit hit;
-
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2 + 80 * UnityEngine.Random.Range(-recoilSpread, recoilSpread), Screen.height / 2 + 80 * UnityEngine.Random.Range(-recoilSpread, recoilSpread), 0));
-
-        if(Physics.Raycast(ray, out hit))
-        {
-            targetPos = hit.point;
-            Debug.DrawLine(weaponParent.position, targetPos, Color.black);
-        }
-        else  
-        {
-            targetPos = Camera.main.transform.forward * 1000;
-            Debug.DrawLine(weaponParent.position, targetPos, Color.white);
-        }
-
-        return targetPos;
+        return animator.GetCurrentAnimatorStateInfo(1).IsName("Melee 1") || animator.GetCurrentAnimatorStateInfo(1).IsName("Melee 2");
     }
-
-    public Weapon GetCurrentWeapon()
+    public bool isAiming()
     {
-        if(isWeaponEquipped())
-            return currentWeapon;
-        else return null;
+        return aiming;
     }
-
-    public bool isWeaponEquipped(){
-        if(currentWeapon != null)  return true;
-        else return false;
-    }
-
-    void GiveAllWeapons(){
-        foreach(Weapon weapon in armouryObject.armoury){
-            AddToAvaliableWeapons(weapon.gameObject);
-        }
-    }
-
-
-    bool isCrossHairHostile()
+    bool isSlotEmpty(WeaponSlot slot)
     {
-        RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-
-        if(Physics.Raycast(ray, out hit))
+        GameObject slotObject = GetWeaponGameobjectFromSlot(slot);
+        if(slotObject == null)
         {
-            if(hit.transform.GetComponent<DamageableObject>())  return true;
+            return true;
         }
-        return false;
-
+        else
+        {
+            return false;
+        }
     }
 
-    bool isCrossHairIntrigue()
+    GameObject GetWeaponGameobjectFromSlot(WeaponSlot slot)
     {
-        RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        //Variable to store retrived weapon
+        GameObject weaponGameObject = null;
 
-        if (Physics.Raycast(ray, out hit))
+        //Switch-Case statement finding correct weapon
+        switch (slot)
         {
-            if (hit.transform.tag == "Interactable") return true;
-        }
-        return false;
+            case WeaponSlot.Melee:
+                weaponGameObject = meleeWeapon;
+                break;
 
+            case WeaponSlot.Primary:
+                weaponGameObject = primaryWeapon;
+                break;
+
+            case WeaponSlot.Secondary:
+                weaponGameObject = secondaryWeapon;
+                break;
+
+            case WeaponSlot.None:
+                weaponGameObject = null;
+                break;
+        }
+
+        //return weapon
+        return weaponGameObject;
     }
+    WeaponSlot GetSlotFromWeaponGameObject(GameObject weapon)
+    {
+        //Variable to store retrived weapon
+        WeaponSlot slot = WeaponSlot.None;
+
+        if (weapon == primaryWeapon) slot = WeaponSlot.Primary;
+        if (weapon == secondaryWeapon) slot = WeaponSlot.Secondary;
+        if (weapon == meleeWeapon) slot = WeaponSlot.Melee;
+
+        //return weapon
+        return slot;
+    }
+    Transform GetTransformFromSlot(WeaponSlot slot)
+    {
+        //Variable to store retrived weapon
+        Transform transformPoint = transform;
+
+        switch (slot)
+        {
+            case WeaponSlot.Primary:
+                transformPoint = primaryWeaponStoreTransform;
+                break;
+            case WeaponSlot.Secondary:
+                transformPoint = secondaryWeaponStoreTransform;
+                break;
+            case WeaponSlot.Melee:
+                transformPoint = meleeWeaponStoreTransform;
+                break;
+        }
+
+        //return weapon
+        return transformPoint;
+    }
+
+    public void IncreaseAmmoCount(RangedWeapon.AmmoType type, int count)
+    {
+        ammoCount[(int)type] += count;
+    }
+
+    public void FireAnimation()
+    {
+        animator.SetTrigger("Fire");
+    }
+
 }
 
 

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48aafd91f4ca3df4893ff6514c6cd2b9, type: 3}
   m_Name: StandardAmmo
   m_EditorClassIdentifier: 
-  Name: Standard Bullets
+  Name: Impact Bullets
   Description: Standard Issue Ammunition
   Icon: {fileID: 21300000, guid: c97693fc565c53547a353e7e959b5c1c, type: 3}

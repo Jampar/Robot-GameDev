@@ -7,21 +7,40 @@ using UnityEngine.UI;
 public class DamageableObject : MonoBehaviour
 {
     [Space]
-    [Header("DamageableObject")]
+    [Header("Damageable Object")]
+    
     public string Name;
     public DamageMatrix.DamObTypes damObType;
+
+
+    #region Health
+
+    [Header("Health Variables")]
+
     public float currentHealth;
     public float maxHealth;
 
+    #endregion
+
+
+    #region Health Bar
+
+    [Header("Health Bar")]
+
     public GameObject heathBarPrefab;
     public Transform healthBarPoint;
-    [HideInInspector]
-    public GameObject healthBarInstance;
+    [HideInInspector]   public GameObject healthBarInstance;
     bool healthBarCreated;
 
-    [HideInInspector]
-    public GameObject damagedBy;
-    
+    #endregion   
+
+    [Space]
+
+    [HideInInspector]   public GameObject lastDamagedBy;
+
+
+
+
     public void CreateHealthBar()
     {
         healthBarInstance = Instantiate(heathBarPrefab);
@@ -44,11 +63,13 @@ public class DamageableObject : MonoBehaviour
     {        
         Debug.Log(origin.name + " damaged: " + name + " for: "+ damage);
 
-        damagedBy = origin;
+        lastDamagedBy = origin;
         currentHealth -= damage;
+
         if(!healthBarCreated) CreateHealthBar();
         UpdateHealthBar();
-        if(currentHealth <= 0) Die();
+
+        if (currentHealth <= 0) Die();
 
     }
 

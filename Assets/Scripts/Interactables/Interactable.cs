@@ -2,20 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using cakeslice;
 
 public abstract class Interactable : MonoBehaviour
 {
     [Header("Interactable")]
+    public bool interactable = true;
+
+    [Space]
+
+    [Header("Tool Tip")]
     public InteractableTooltip tooltip;
     public GameObject tooltipGameobject;
     public Transform tooltipPoint;
     GameObject tooltipInstance;
     bool created = false;
-    public bool createTooltip;
-    public bool outline;
+    
 
     public void CreateTooltip(){
-        if(!created && createTooltip){
+        if(!created){
             tooltipInstance = Instantiate(tooltipGameobject);
             tooltipInstance.transform.GetChild(0).GetComponent<Text>().text = tooltip.Name;
             tooltipInstance.transform.GetChild(1).GetComponent<Text>().text = tooltip.Description;
@@ -29,6 +34,25 @@ public abstract class Interactable : MonoBehaviour
             created = true;
         }
     }
+
+    void OutlineGameObject()
+    {
+        if (!GetComponent<cakeslice.Outline>())
+            gameObject.AddComponent<cakeslice.Outline>();
+    }
+
+    public void Highlight()
+    {
+        CreateTooltip();
+        OutlineGameObject();
+    }
+
+    public void RemoveInteractableHighlight()
+    {
+        DestroyToolTip();
+        DestroyOutline();
+    }
+
     public void DestroyToolTip()
     {
         if(created){
@@ -37,8 +61,13 @@ public abstract class Interactable : MonoBehaviour
         }
     }
 
+    void DestroyOutline()
+    {
+        if (GetComponent<cakeslice.Outline>()) Destroy(GetComponent<cakeslice.Outline>());
+    }
+
     public virtual void PerformInteraction(){
-        print("Interacted");
+        print("Interacted with " + name);
     }
     
 }

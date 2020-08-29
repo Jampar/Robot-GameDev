@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour
     #region Speed Variables
     float speed;    //Speed for Character locomotion
     float lerpSpeed = 7.0f;     //Speed for Dynamic Animation Interpolation
-    float sprintSpeed = 6;
+    float sprintSpeed = 6f;
     float walkSpeed = 3f;
     float crouchSpeed = 2.0f;
     float jumpSpeed = 5.0f;
@@ -26,14 +26,17 @@ public class PlayerController : MonoBehaviour
     public bool matchHead;
     public bool matchChest;
     public bool matchHip;
+    public bool matchBody;
     #endregion
 
 	#region Player Locomotion
     private Vector3 moveDirection;	//Vector for the direction of Character locomotion
 	private const float _g = -9.81f;	//Gravity constant
 
-    enum MovementTypeLookup { Idle, Walk, Sprint,Falling};
-    MovementTypeLookup movementType;
+    [HideInInspector]
+    public enum MovementTypeLookup { Idle, Walk, Sprint, Backwards};
+    [HideInInspector]
+    public static MovementTypeLookup movementType;
 
     bool isCrouched = false;
 
@@ -94,10 +97,14 @@ public class PlayerController : MonoBehaviour
 		//Get Main Camera GameObject
         GameObject camera = Camera.main.gameObject;
 
-        if(GetComponent<PlayerCombat>().aiming && movementType != MovementTypeLookup.Sprint){
+        /*
+        if(GetComponent<PlayerCombat>().isAiming() && movementType != MovementTypeLookup.Sprint){
             chestBone.LookAt(camera.transform.position + camera.transform.forward * 10);
         }	
-        else if(matchChest){
+        */
+
+        if (matchChest || GetComponent<PlayerCombat>().isAiming())
+        {
             //Match the chest bone's Y rotation to the camera's Y rotation
             chestBone.eulerAngles = new Vector3(chestBone.rotation.eulerAngles.x,
                                                 camera.transform.rotation.eulerAngles.y,
@@ -110,7 +117,7 @@ public class PlayerController : MonoBehaviour
                                                 headBone.transform.rotation.eulerAngles.y,
                                                 headBone.rotation.eulerAngles.z);
         }
-		if(matchHip){			
+		if(matchHip && movementType != MovementTypeLookup.Backwards){			
             //Check if the player is moving					
             if (movementMagnitude > 0)
             {
@@ -126,7 +133,6 @@ public class PlayerController : MonoBehaviour
 
             }
         }
-
     }
 
     void CharacterLocomotion()
@@ -159,8 +165,18 @@ public class PlayerController : MonoBehaviour
         //Apply gravity to the movement vector
         moveDirection.y += _g * Time.deltaTime;
 
-        // Move the controller
-        characterController.Move(moveDirection * Time.deltaTime);
+
+        if (matchBody)
+        {
+            if(moveDirection.magnitude != 0)
+                transform.rotation = Quaternion.LookRotation(moveDirection);
+        }
+        else
+        {
+            // Move the controller
+            characterController.Move(moveDirection * Time.deltaTime);
+        }
+        
 
     }
 
@@ -213,20 +229,15 @@ public class PlayerController : MonoBehaviour
          
         //Set movement animation
         animator.SetInteger("MovementType", (int)movementType);
-        animator.SetBool("Crouched",isCrouched);
+        //animator.SetBool("Crouched",isCrouched);
     }
 
 
     void SetCorrectMovementType(Vector3 movementVector)
     {
-        //If not grounded
-        if(!isGrounded())
-        {
-            //Change movement type to falling
-            ChangeMovementType(MovementTypeLookup.Falling);
-        }
+      
 		//If the player is moving
-        else if (isMoving())
+        if (isMoving())
         {
             //Rotate gameobject to match the movement direction
             MatchRotationToMovementDirection();
@@ -239,6 +250,11 @@ public class PlayerController : MonoBehaviour
 
                 //Change movement type to sprinting
                 ChangeMovementType(MovementTypeLookup.Sprint);
+            }
+
+            if(Input.GetKey(KeyCode.S))
+            {
+                ChangeMovementType(MovementTypeLookup.Backwards);
             }
         }
         else
