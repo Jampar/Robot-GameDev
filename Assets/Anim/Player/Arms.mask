@@ -18,7 +18,7 @@ AvatarMask:
   - m_Path: Skeleton
     m_Weight: 0
   - m_Path: Skeleton/Chest
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Skeleton/Chest/L_Shoulder
     m_Weight: 1
   - m_Path: Skeleton/Chest/L_Shoulder/L_Forearm

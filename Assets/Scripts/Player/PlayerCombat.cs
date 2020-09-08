@@ -60,14 +60,16 @@ public class PlayerCombat : DamageableObject
 
     #endregion
 
+    public Image healthUI;
+
     #region Zoom Variables
 
     [Header("Zoom Variables")]
 
     float cameraOriginalPOV;
     public float zoomPOV = 40;
-    float targetPOV;
-    public float zoomTime = 2;
+    float targetFOV;
+    public float zoomTime = 4;
 
     #endregion
 
@@ -78,6 +80,12 @@ public class PlayerCombat : DamageableObject
     float recoilSpread;
     public float maxRecoil;
     bool recoilFull;
+
+    float holdThreshold = 1.0f;
+    float holdTimer;
+    bool performedHeavyAttack;
+
+    float healthLerpSpeed = 2.0f;
     
     void Start()
     {
@@ -109,9 +117,13 @@ public class PlayerCombat : DamageableObject
         playerController = GetComponent<PlayerController>();
 
         freeLookCamera = Camera.main.transform.GetChild(0).GetComponent<CinemachineFreeLook>();
+        freeLookCamera.m_CommonLens = true;
         cameraOriginalPOV = freeLookCamera.m_Lens.FieldOfView;
+        ZoomOutPOV();
 
-        //***************************************************        
+        //***************************************************      
+
+        holdTimer = holdThreshold;
     }
      
     // Update is called once per frame
@@ -130,6 +142,8 @@ public class PlayerCombat : DamageableObject
         if(!isSlotEmpty(selectedSlot) && !isMeleeAnimationPlaying())
             //Shooting Handling *********************************
             ShootingHandling();
+
+        UiHandling();
     }
 
     void MeleeHandling()
@@ -139,14 +153,36 @@ public class PlayerCombat : DamageableObject
 
         if (PlayerController.movementType != PlayerController.MovementTypeLookup.Sprint)
         {
-            //Set the animator state to do melee attack
-            animator.SetBool("Melee", meleeInput);
+            if (Input.GetButtonDown("Fire1"))
+            {
+                //Set the animator state to do melee attack
+                animator.SetTrigger("Melee");
+            }
+
+        }
+
+        if (meleeInput && !performedHeavyAttack)
+        {
+            holdTimer -= Time.deltaTime;
+
+            if (holdTimer <= 0.0f)
+            {
+                animator.SetTrigger("Heavy Hit");
+                holdTimer = holdThreshold;
+                performedHeavyAttack = true;
+            }
         }
         else
         {
-            //Set the animator state to do melee attack
-            animator.SetBool("Melee", false);
+            holdTimer = holdThreshold;
+            animator.SetBool("Charging", false);
+
+            if (Input.GetButtonUp("Fire1"))
+                performedHeavyAttack = false;
         }
+
+        GetWeaponGameobjectFromSlot(WeaponSlot.Melee).GetComponent<MeleeWeapon>().isSwinging = isMeleeAnimationPlaying();
+
 
         //If animator playing melee animation hold the sword in hand.
         if (isMeleeAnimationPlaying())
@@ -167,6 +203,8 @@ public class PlayerCombat : DamageableObject
         animator.SetBool("Aim", aimInput);
         crossHair.GetComponent<Animator>().SetBool("Open", aimInput);
 
+        freeLookCamera.m_Lens.FieldOfView = Mathf.Lerp(freeLookCamera.m_Lens.FieldOfView, targetFOV,zoomTime * Time.deltaTime);
+
         aiming = aimInput;
 
         if (Input.GetButton("Fire2"))
@@ -179,6 +217,10 @@ public class PlayerCombat : DamageableObject
                 case (WeaponSlot.Secondary):
                     animator.SetBool("Secondary Aim", true);
                     break;
+                case (WeaponSlot.Primary):
+                    animator.SetBool("Primary Aim", true);
+                    break;
+
             }
 
             if (Input.GetButton("Fire1"))
@@ -186,25 +228,29 @@ public class PlayerCombat : DamageableObject
                 GetWeaponGameobjectFromSlot(selectedSlot).GetComponent<RangedWeapon>().Fire();
             }
         }
-        else
+        else 
         {
             ZoomOutPOV();
             SetWeaponTransform(selectedSlot, GetTransformFromSlot(selectedSlot));
             animator.SetBool("Secondary Aim", false);
-
+            animator.SetBool("Primary Aim", false);
         }
 
+    }
+    void UiHandling()
+    {
+        healthUI.fillAmount = Mathf.Lerp(healthUI.fillAmount, currentHealth / maxHealth + maxHealth / 1000, healthLerpSpeed * Time.deltaTime); ;
     }
 
     void ZoomInPOV()
     {
-        if(targetPOV != zoomPOV)
-            targetPOV = zoomPOV;
+        if(targetFOV != zoomPOV)
+            targetFOV = zoomPOV;
     }
     void ZoomOutPOV()
     {
-        if (targetPOV != cameraOriginalPOV)
-            targetPOV = cameraOriginalPOV;
+        if (targetFOV != cameraOriginalPOV)
+            targetFOV = cameraOriginalPOV;
     }
 
     void ToggleSelectedWeapon()
@@ -260,7 +306,10 @@ public class PlayerCombat : DamageableObject
 
     bool isMeleeAnimationPlaying()
     {
-        return animator.GetCurrentAnimatorStateInfo(1).IsName("Melee 1") || animator.GetCurrentAnimatorStateInfo(1).IsName("Melee 2");
+        return animator.GetCurrentAnimatorStateInfo(1).IsName("Melee") || 
+               animator.GetCurrentAnimatorStateInfo(1).IsName("Melee 0") ||
+               animator.GetCurrentAnimatorStateInfo(1).IsName("Skeleton|(new) Heavy Hit") ||
+               animator.GetCurrentAnimatorStateInfo(1).IsName("Skeleton|(new) Melee Idle");
     }
     public bool isAiming()
     {
@@ -350,7 +399,6 @@ public class PlayerCombat : DamageableObject
     {
         animator.SetTrigger("Fire");
     }
-
 }
 
 

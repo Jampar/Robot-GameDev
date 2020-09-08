@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4025267123670561151}
   - component: {fileID: 3801110832556459317}
   m_Layer: 0
-  m_Name: Tree
+  m_Name: Stump
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -111,19 +111,19 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BumpSpecMap:
-        m_Texture: {fileID: 2800000, guid: 933882a0edd400b4293262f2bd966c38, type: 3}
+        m_Texture: {fileID: 2800000, guid: b135a4c3a40a6754a8faea1dbefcc483, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: ae42a286109392d46b74415447f12057, type: 3}
+        m_Texture: {fileID: 2800000, guid: 23b6c885f1290f6458f6137956efc1a7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ShadowTex:
-        m_Texture: {fileID: 2800000, guid: 67eb2a89a41ebdc4eab86a86fdc6380d, type: 3}
+        m_Texture: {fileID: 2800000, guid: bdbfd9dad5c86714d96e689a920d1fd1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TranslucencyMap:
-        m_Texture: {fileID: 2800000, guid: 73d88d7a881e8b64cab88994bdf1e667, type: 3}
+        m_Texture: {fileID: 2800000, guid: e1e6112ac289ee643ace196d26c64d26, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
@@ -856,15 +856,15 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BumpSpecMap:
-        m_Texture: {fileID: 2800000, guid: 933882a0edd400b4293262f2bd966c38, type: 3}
+        m_Texture: {fileID: 2800000, guid: b135a4c3a40a6754a8faea1dbefcc483, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: ae42a286109392d46b74415447f12057, type: 3}
+        m_Texture: {fileID: 2800000, guid: 23b6c885f1290f6458f6137956efc1a7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TranslucencyMap:
-        m_Texture: {fileID: 2800000, guid: 73d88d7a881e8b64cab88994bdf1e667, type: 3}
+        m_Texture: {fileID: 2800000, guid: e1e6112ac289ee643ace196d26c64d26, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:

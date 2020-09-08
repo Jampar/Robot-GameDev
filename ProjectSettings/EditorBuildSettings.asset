@@ -17,7 +17,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Hub Branch2.unity
     guid: 388c7d2aae124ce4aa8802efeb41f904
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/PuzzleTestScene.unity
     guid: 0f1e47624729edf458e43be476b2d885
+  - enabled: 1
+    path: Assets/Scenes/StoryBegining.unity
+    guid: 0180bed2908d52c4c9ac38dc7f13b0cf
   m_configObjects: {}

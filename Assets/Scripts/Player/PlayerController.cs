@@ -137,13 +137,16 @@ public class PlayerController : MonoBehaviour
 
     void CharacterLocomotion()
     {
-        if(Input.GetButtonDown("Crouch")) isCrouched = !isCrouched;
+        //if(Input.GetButtonDown("Crouch")) isCrouched = !isCrouched;
 
         //If grounded
         if (isGrounded())
         {
             //Calculate the movement vector from input
             moveDirection = CalculateMovementVector();
+        }
+        else
+        {
         }
 
         if(isCrouched)
@@ -229,6 +232,8 @@ public class PlayerController : MonoBehaviour
          
         //Set movement animation
         animator.SetInteger("MovementType", (int)movementType);
+        animator.SetBool("Falling", !isGrounded());
+
         //animator.SetBool("Crouched",isCrouched);
     }
 

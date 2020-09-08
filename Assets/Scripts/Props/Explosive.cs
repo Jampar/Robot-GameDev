@@ -8,6 +8,7 @@ public class Explosive : DamageableObject
     GameObject explosion;
     [SerializeField]
     float explosion_radius;
+    public float damage;
     
     [SerializeField]
     Color gizmoColor;
@@ -15,7 +16,6 @@ public class Explosive : DamageableObject
     public override void Die()
     {
         GetComponent<Animator>().SetTrigger("Explode");
-        Destroy(healthBarInstance);
     }
 
     public void Explode()
@@ -29,7 +29,6 @@ public class Explosive : DamageableObject
             if(coll.GetComponent<DamageableObject>() && coll.gameObject != lastDamagedBy && coll.gameObject != gameObject)
             {
                 DamageableObject damageableObject = coll.GetComponent<DamageableObject>();
-                float damage = DamageMatrix.GetDamage(damObType,DamageMatrix.DamageTypes.Explosive);
                 damageableObject.DealDamage(damage,gameObject);
             }
 
