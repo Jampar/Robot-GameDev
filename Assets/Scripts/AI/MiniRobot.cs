@@ -3,58 +3,59 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class MiniRobot : MonoBehaviour
+public class MiniRobot : FlyingObject
 {
+    public GameObject backpack;
+    Transform robotSlot;
 
-    NavMeshAgent agent;
+    float storeDist = 20.0f;
+    public static bool returnToSlot;
+    bool inSlot;
 
     public float hoverDistance;
     public float hoverSpeed;
+    public float heightLerpSpeed;
 
-    GameObject player;
-
-    Vector3 targetPos;
-
-    public float moveSpeed;
-    public float stoppingDist;
-    public float yOffset;
-
-    public float lookSpeed;
-    Vector3 lookPos;
-
+    
     // Start is called before the first frame update
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player");
+        agent = GetComponent<NavMeshAgent>();
+        robotSlot = backpack.transform.Find("Robot Slot");
     }
 
     // Update is called once per frame
     void Update()
     {
-        FollowPlayer();
-        HoverSway();
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(LookDirection()) * Quaternion.Euler(-90,0,0), lookSpeed * Time.deltaTime);
+        if(returnToSlot)
+            ReturnToSlot();
+
     }
 
-    void FollowPlayer()
+    void ReleaseFromSlot()
     {
-        Vector3 playerPos = player.transform.position;
+        transform.SetParent(null);
+        agent.enabled = true;
+        inSlot = false;
+    }
 
-        if (Vector3.Distance(transform.position, playerPos) > stoppingDist)
+    void ReturnToSlot()
+    {
+        agent.SetDestination(robotSlot.position);
+        float distToSlot = Vector3.Distance(transform.position, agent.destination);
+        
+        if (distToSlot < storeDist*transform.localScale.y)
         {
-            targetPos = playerPos;
+            agent.enabled = false;
+            transform.SetParent(robotSlot);
+
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.Euler(Vector3.zero);
+
+            agent.SetDestination(transform.position);
+            returnToSlot = false;
+            inSlot = true;
         }
-
-        transform.position = Vector3.Lerp(transform.position, new Vector3(targetPos.x, targetPos.y + yOffset, targetPos.z), moveSpeed * Time.deltaTime);
-
-    }
-    Vector3 LookDirection()
-    {
-        return targetPos - transform.position;
-    }
-    void HoverSway()
-    {
-        transform.position = new Vector3(transform.position.x, transform.position.y + (Mathf.Sin(Time.time * hoverSpeed) * hoverDistance * Time.deltaTime), transform.position.z);
     }
 
 }

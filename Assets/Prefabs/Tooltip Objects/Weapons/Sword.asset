@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Sword
   m_EditorClassIdentifier: 
   Name: Sword
-  Description: 
-  Icon: {fileID: 0}
+  Description: Sharp blade for slicing or stabbing
+  Icon: {fileID: 21300000, guid: cde8d0b5698cf3346ad10ac26756de52, type: 3}

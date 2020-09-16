@@ -41,7 +41,9 @@ public class PlayerCombat : DamageableObject
 
     [Header("Transforms for Weapons")]
 
+    public Transform backpackPoint;
     public Transform weaponHoldTransform;
+
     public Transform meleeWeaponStoreTransform;
     public Transform primaryWeaponStoreTransform;
     public Transform secondaryWeaponStoreTransform;
@@ -76,6 +78,8 @@ public class PlayerCombat : DamageableObject
     bool fadeUI = false;
 
     static GameObject _playerInstance;
+    static GameObject backpack;
+    static bool equipBackpack;
 
     float recoilSpread;
     public float maxRecoil;
@@ -129,19 +133,24 @@ public class PlayerCombat : DamageableObject
     // Update is called once per frame
     void Update()
     {
-        //Melee Handling ************************************
-        if (!isSlotEmpty(WeaponSlot.Melee) && !Input.GetButton("Fire2"))
-            MeleeHandling();
-
-        if(!isSlotEmpty(WeaponSlot.Primary) && !isSlotEmpty(WeaponSlot.Secondary))
+        if (backpack)
         {
-            // Weapon Swap **************************************
-            if (Input.GetKeyDown(KeyCode.X)) ToggleSelectedWeapon();
+            if (equipBackpack) SetBackpackPosition();
+
+            //Melee Handling ************************************
+            if (!isSlotEmpty(WeaponSlot.Melee) && !Input.GetButton("Fire2"))
+                MeleeHandling();
+
+            if (!isSlotEmpty(WeaponSlot.Primary) && !isSlotEmpty(WeaponSlot.Secondary))
+            {
+                // Weapon Swap **************************************
+                if (Input.GetKeyDown(KeyCode.X)) ToggleSelectedWeapon();
+            }
+
+            if (!isSlotEmpty(selectedSlot) && !isMeleeAnimationPlaying())
+                //Shooting Handling *********************************
+                ShootingHandling();
         }
-         
-        if(!isSlotEmpty(selectedSlot) && !isMeleeAnimationPlaying())
-            //Shooting Handling *********************************
-            ShootingHandling();
 
         UiHandling();
     }
@@ -304,6 +313,21 @@ public class PlayerCombat : DamageableObject
         }
     }
 
+    public static void EquipBackpack(GameObject _backpack)
+    {
+        backpack = _backpack;
+        equipBackpack = true;
+    }
+
+    void SetBackpackPosition()
+    {
+        backpack.transform.SetParent(backpackPoint);
+        backpack.transform.localPosition = Vector3.zero;
+        backpack.transform.localRotation = Quaternion.Euler(new Vector3(-90,0,-90));
+
+        equipBackpack = false;
+    }
+
     bool isMeleeAnimationPlaying()
     {
         return animator.GetCurrentAnimatorStateInfo(1).IsName("Melee") || 
@@ -311,6 +335,7 @@ public class PlayerCombat : DamageableObject
                animator.GetCurrentAnimatorStateInfo(1).IsName("Skeleton|(new) Heavy Hit") ||
                animator.GetCurrentAnimatorStateInfo(1).IsName("Skeleton|(new) Melee Idle");
     }
+
     public bool isAiming()
     {
         return aiming;

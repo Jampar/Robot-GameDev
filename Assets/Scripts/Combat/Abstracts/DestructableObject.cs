@@ -11,6 +11,7 @@ public class DestructableObject : DamageableObject
             GameObject child = transform.GetChild(i).gameObject;
             child.transform.SetParent(null);
             child.AddComponent<Rigidbody>();
+            Destroy(child.gameObject, 1);
         }
 
         base.Die();
