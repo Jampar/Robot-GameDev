@@ -5,6 +5,5 @@ The repo that holds the game i have been developing about a robot stranded on a 
 * Twitter: https://twitter.com/j_polygon
 * Reddit: https://www.reddit.com/user/j_polygon
 
-![Cover](Cover.PNG)
 ![Robot](GameSS.PNG)
 
